@@ -1,0 +1,64 @@
+<html>
+    <head>
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <script src="http://www.verovio.org/javascript/latest/verovio-toolkit-wasm.js" defer></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", (event) => {
+                verovio.module.onRuntimeInitialized = async _ => {
+                    let tk = new verovio.toolkit();
+                    console.log("Verovio has loaded!");
+                    tk.setOptions({
+                        breaks: 'none'
+                        });
+
+                    const fileInput = document.getElementById("file-input");
+                    fileInput.addEventListener("change", (event) => {
+                        const file = event.target.files[0];
+                        const reader = new FileReader();
+                        reader.readAsText(file);
+                        reader.onload = (event) => {
+                            const meiXML = event.target.result;
+                            tk.loadData(meiXML);
+                            const svgString = tk.renderToSVG(1, {});
+                            svgElement = new DOMParser().parseFromString(svgString, "image/svg+xml").documentElement;
+
+                            // Get the coordinates of the two elements
+                            const element1 = svgElement.querySelector("#n1kk94ih use")
+                            const element2 = svgElement.querySelector("#n17otvv1 use")
+                            const x1 = element1.x.animVal.value + (element1.width.animVal.value / 5);
+                            const y1 = element1.y.animVal.value
+                            const x2 = element2.x.animVal.value + (element2.width.animVal.value / 5);
+                            const y2 = element2.y.animVal.value
+                            console.log("Element 1:", element1);
+                            console.log("Element 1x:", x1);
+                            console.log("Element 1y:", y1);
+                            console.log("Element 2x:", x2);
+                            console.log("Element 2y:", y2);
+                            // Create a line element between the two elements
+                            const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                            pathElement.setAttribute("d", `M ${x1} ${y1} L ${x2} ${y2}`);
+                            pathElement.setAttribute("stroke", "red");
+                            pathElement.setAttribute("stroke-width", "30");
+                            svgElement.appendChild(pathElement);
+
+                            //  Add the pathElement to the pagemargin element in the svg element
+                            pageMElemnt = svgElement.querySelector(".page-margin");
+                            pageMElemnt.appendChild(pathElement);
+
+                            const outputDiv = document.getElementById("output");
+                            outputDiv.appendChild(svgElement);
+                        };
+                    });
+                }
+            });
+        </script>
+    </head>
+    <body>
+        <h1>Score Graph visualization</h1>
+        <input type="file" id="file-input">
+        <div id="output">Upload mei file (TSV)</div>
+        <br>
+        <input type="file" id="tsv-file-input">
+        <label for="tsv-file-input">Upload tab-separated file (TSV)</label>
+    </body>
+</html>
