@@ -11,8 +11,22 @@
                         breaks: 'none'
                         });
 
-                    const fileInput = document.getElementById("file-input");
-                    fileInput.addEventListener("change", (event) => {
+                    const jsonFileInput = document.getElementById("json-file-input");
+                    jsonFileInput.addEventListener("change", (event) => {
+                        const file = event.target.files[0];
+                        const reader = new FileReader();
+                        reader.addEventListener("load", (event) => {
+                            jsonData = JSON.parse(event.target.result); // Store the parsed JSON data in the global variable
+                            console.log("JSON:", jsonData);
+                            // Set the desired values using the global variable
+                            const someValue = jsonData.someProperty;
+                            console.log("Some value:", someValue);
+                        });
+                        reader.readAsText(file);
+                        });
+                    
+                    const meifileInput = document.getElementById("file-input");
+                    meifileInput.addEventListener("change", (event) => {
                         const file = event.target.files[0];
                         const reader = new FileReader();
                         reader.readAsText(file);
@@ -21,30 +35,49 @@
                             tk.loadData(meiXML);
                             const svgString = tk.renderToSVG(1, {});
                             svgElement = new DOMParser().parseFromString(svgString, "image/svg+xml").documentElement;
+                            const pageMElemnt = svgElement.querySelector(".page-margin");
+                            // // Get the coordinates of the two elements
+                            // const element1 = svgElement.querySelector("#n1kk94ih use")
+                            // const element2 = svgElement.querySelector("#n17otvv1 use")
+                            // const x1 = element1.x.animVal.value + (element1.width.animVal.value / 5);
+                            // const y1 = element1.y.animVal.value
+                            // const x2 = element2.x.animVal.value + (element2.width.animVal.value / 5);
+                            // const y2 = element2.y.animVal.value
+                            // console.log("Element 1:", element1);
+                            // console.log("Element 1x:", x1);
+                            // console.log("Element 1y:", y1);
+                            // console.log("Element 2x:", x2);
+                            // console.log("Element 2y:", y2);
+                            // // Create a line element between the two elements
+                            // const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                            // pathElement.setAttribute("d", `M ${x1} ${y1} L ${x2} ${y2}`);
+                            // pathElement.setAttribute("stroke", "red");
+                            // pathElement.setAttribute("stroke-width", "30");
+                            // svgElement.appendChild(pathElement);
+                            const zip = (...arrays) => {
+                                const length = Math.min(...arrays.map((array) => array.length));
+                                return Array.from({ length }, (_, i) => arrays.map((array) => array[i]));
+                            };
+                            for (const [start, end] of zip(jsonData.edge_index_dict.consecutive[0], jsonData.edge_index_dict.consecutive[1])) {
+                                console.log(start,end);
+                                // Do something with the consecutive and onset values
+                                const element1 = svgElement.querySelector(`#${jsonData.id[start]} use`)
+                                const element2 = svgElement.querySelector(`#${jsonData.id[end]} use`)
+                                const x1 = element1.x.animVal.value + (element1.width.animVal.value / 5);
+                                const y1 = element1.y.animVal.value
+                                const x2 = element2.x.animVal.value + (element2.width.animVal.value / 5);
+                                const y2 = element2.y.animVal.value
+                                const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                                pathElement.setAttribute("d", `M ${x1} ${y1} L ${x2} ${y2}`);
+                                pathElement.setAttribute("stroke", "red");
+                                pathElement.setAttribute("stroke-width", "30");
+                                svgElement.appendChild(pathElement);
+                                //  Add the pathElement to the pagemargin element in the svg element
+                                pageMElemnt.appendChild(pathElement);
 
-                            // Get the coordinates of the two elements
-                            const element1 = svgElement.querySelector("#n1kk94ih use")
-                            const element2 = svgElement.querySelector("#n17otvv1 use")
-                            const x1 = element1.x.animVal.value + (element1.width.animVal.value / 5);
-                            const y1 = element1.y.animVal.value
-                            const x2 = element2.x.animVal.value + (element2.width.animVal.value / 5);
-                            const y2 = element2.y.animVal.value
-                            console.log("Element 1:", element1);
-                            console.log("Element 1x:", x1);
-                            console.log("Element 1y:", y1);
-                            console.log("Element 2x:", x2);
-                            console.log("Element 2y:", y2);
-                            // Create a line element between the two elements
-                            const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                            pathElement.setAttribute("d", `M ${x1} ${y1} L ${x2} ${y2}`);
-                            pathElement.setAttribute("stroke", "red");
-                            pathElement.setAttribute("stroke-width", "30");
-                            svgElement.appendChild(pathElement);
+                            }
 
-                            //  Add the pathElement to the pagemargin element in the svg element
-                            pageMElemnt = svgElement.querySelector(".page-margin");
-                            pageMElemnt.appendChild(pathElement);
-
+                            
                             const outputDiv = document.getElementById("output");
                             outputDiv.appendChild(svgElement);
                         };
@@ -55,10 +88,10 @@
     </head>
     <body>
         <h1>Score Graph visualization</h1>
-        <input type="file" id="file-input">
-        <div id="output">Upload mei file (TSV)</div>
+        <input type="file" id="json-file-input">
+        <label for="json-file-input">Upload json file encoding graph</label>
         <br>
-        <input type="file" id="tsv-file-input">
-        <label for="tsv-file-input">Upload tab-separated file (TSV)</label>
+        <input type="file" id="file-input">
+        <div id="output">Upload mei file </div>
     </body>
 </html>
