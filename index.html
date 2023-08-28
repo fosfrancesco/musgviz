@@ -1,59 +1,56 @@
+<!DOCTYPE html>
 <html>
-    <head>
-        <script src="https://d3js.org/d3.v7.min.js"></script>
-        <script src="http://www.verovio.org/javascript/latest/verovio-toolkit-wasm.js" defer></script>
-        <script src ="scripts/load_annotations.js" defer></script>
-        <script src ="scripts/display_score.js" defer></script>
-        <script>
-        </script>
-    </head>
-    <body>
-        <h1>Score Graph visualization</h1>
-        <input type="file" id="json-file-input">
-        <label for="json-file-input">Upload json file encoding graph</label>
-        <br>
-        <div>
-            <input type="checkbox" id="toggle-onset-edges" class="toggle-color-1" checked/>
-            <label for="toggle-onset-edges">Onset</label>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Score Graph Visualization</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Score Graph Visualization</h1>
+    </header>
+    <main>
+      <section>
+        <h2>Upload Files</h2>
+        <div class="file-upload">
+          <label for="json-file-input">Upload JSON graph annotation:</label>
+          <input type="file" id="json-file-input" />
         </div>
-        <div>
+        <div class="file-upload">
+          <label for="mei-file-input">Upload MEI score file:</label>
+          <input type="file" id="mei-file-input" />
+        </div>
+      </section>
+      <section>
+        <h2>Options</h2>
+        <div id="checkbox-container">
+          <div>
+            <input type="checkbox" id="toggle-onset-edges" class="toggle-color-1" checked />
+            <label for="toggle-onset-edges">Onset</label>
+          </div>
+          <div>
             <input type="checkbox" id="toggle-during-edges" class="toggle-color-2" checked />
             <label for="toggle-during-edges">During</label>
-        </div>
-        <div>
+          </div>
+          <div>
             <input type="checkbox" id="toggle-rest-edges" class="toggle-color-3" checked />
             <label for="toggle-rest-edges">Rest</label>
-        </div>
-        <div>
+          </div>
+          <div>
             <input type="checkbox" id="toggle-consecutive-edges" class="toggle-color-4" checked />
             <label for="toggle-consecutive-edges">Consecutive</label>
+          </div>
         </div>
-        <br>
-        <input type="file" id="file-input">
-        <div id="output">Upload mei file </div>
-
-        <style>
-            input[type="checkbox"].toggle-color-1:checked + label::before {
-                background-color: red;
-            }
-            input[type="checkbox"].toggle-color-2:checked + label::before {
-                background-color: green;
-            }
-            input[type="checkbox"].toggle-color-3:checked + label::before {
-                background-color: blue;
-            }
-            input[type="checkbox"].toggle-color-4:checked + label::before {
-                background-color: yellow;
-            }
-            html, body {
-                height: 100%;
-                margin: 0;
-                padding: 0;
-            }
-            div[id="output"] {
-                width: 100%;
-                overflow-x: scroll;
-            }
-
-    </body>
+      </section>
+      <section>
+        <h2>Output</h2>
+        <div id="instructions">Upload JSON graph annotation first.</div>
+        <div id="output"></div>
+      </section>
+    </main>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="http://www.verovio.org/javascript/latest/verovio-toolkit-wasm.js" defer></script>
+    <script src="scripts/displayScoreScripts.js" defer></script>
+  </body>
 </html>
