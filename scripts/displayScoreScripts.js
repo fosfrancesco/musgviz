@@ -103,6 +103,14 @@ toggleTruthEdgesCheckbox.addEventListener("change", (event) => {
         element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
     });
 });
+// toggle for potential edges
+const togglePotentialEdgesCheckbox = document.getElementById("toggle-potential-edges");
+togglePotentialEdgesCheckbox.addEventListener("change", (event) => {
+    const potentialEdgeElements = document.querySelectorAll(".potential_edge");
+    potentialEdgeElements.forEach((element) => {
+        element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
+    });
+});
 
 
 function displayScoreWithGraph(scoreFile, graph_annotation, verovioTk) {
@@ -133,6 +141,8 @@ function displayScoreWithGraph(scoreFile, graph_annotation, verovioTk) {
         // add the output edges
         // add the truth edges
         addOutputEdges("truth", graph_annotation, svgElement, pageElemnt, zip, "grey");
+        // add the potential edges
+        addOutputEdges("potential", graph_annotation, svgElement, pageElemnt, zip, "orange");
         
         // add the verovio score to the html page
         const outputDiv = document.getElementById("output");
