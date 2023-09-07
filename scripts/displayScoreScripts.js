@@ -130,19 +130,19 @@ function displayScoreWithGraph(scoreFile, graph_annotation, verovioTk) {
         };
         // add the input edges
         // add the consecutive edges
-        addInputEdges("consecutive", graph_annotation, pageElemnt, zip, "red");   
+        addEdges("consecutive", graph_annotation, pageElemnt, zip, "red");   
         // add the onset edges
-        addInputEdges("onset", graph_annotation, pageElemnt, zip, "blue");
+        addEdges("onset", graph_annotation, pageElemnt, zip, "blue");
         // add the during edges
-        addInputEdges("during", graph_annotation, pageElemnt, zip, "green");
+        addEdges("during", graph_annotation, pageElemnt, zip, "green");
         // add the rest edges
-        addInputEdges("rest", graph_annotation,  pageElemnt, zip, "yellow");
+        addEdges("rest", graph_annotation,  pageElemnt, zip, "yellow");
 
         // add the output edges
         // add the truth edges
-        addOutputEdges("truth", graph_annotation, svgElement, pageElemnt, zip, "grey");
+        addEdges("truth", graph_annotation, pageElemnt, zip, "grey");
         // add the potential edges
-        addOutputEdges("potential", graph_annotation, svgElement, pageElemnt, zip, "orange");
+        addEdges("potential", graph_annotation, pageElemnt, zip, "orange");
         
         // add the verovio score to the html page
         const outputDiv = document.getElementById("output");
@@ -150,30 +150,32 @@ function displayScoreWithGraph(scoreFile, graph_annotation, verovioTk) {
     };
 }
 
-function addInputEdges(edgeType, jsonGraphAnnotation, pageElemnt, zip, color) {
-    for (const [start, end] of zip(jsonGraphAnnotation.input_edges_dict[edgeType][0], jsonGraphAnnotation.input_edges_dict[edgeType][1])) {
-        addEdges(edgeType, jsonGraphAnnotation, start, end, pageElemnt, color);
-    }
-}
+// function addInputEdges(edgeType, jsonGraphAnnotation, pageElemnt, zip, color) {
+//     for (const [start, end] of zip(jsonGraphAnnotation.input_edges_dict[edgeType][0], jsonGraphAnnotation.input_edges_dict[edgeType][1])) {
+//         addEdges(edgeType, jsonGraphAnnotation, start, end, pageElemnt, color);
+//     }
+// }
 
-function addOutputEdges(edgeType, jsonGraphAnnotation, svgElement, pageElemnt, zip, color) {
-    for (const [start, end] of zip(jsonGraphAnnotation.output_edges_dict[edgeType][0], jsonGraphAnnotation.output_edges_dict[edgeType][1])) {
-        addEdges(edgeType, jsonGraphAnnotation, start, end, pageElemnt, color);
+// function addOutputEdges(edgeType, jsonGraphAnnotation, svgElement, pageElemnt, zip, color) {
+//     for (const [start, end] of zip(jsonGraphAnnotation.output_edges_dict[edgeType][0], jsonGraphAnnotation.output_edges_dict[edgeType][1])) {
+//         addEdges(edgeType, jsonGraphAnnotation, start, end, pageElemnt, color);
         
-    }
-}
+//     }
+// }
 
-function addEdges(edgeType,jsonGraphAnnotation, start, end, pageElement, color) {
-    const element1 = pageElement.querySelector(`#${jsonGraphAnnotation.id[start]} use`);
-    const element2 = pageElement.querySelector(`#${jsonGraphAnnotation.id[end]} use`);
-    const x1 = element1.x.animVal.value + (element1.width.animVal.value / 5);
-    const y1 = element1.y.animVal.value;
-    const x2 = element2.x.animVal.value + (element2.width.animVal.value / 5);
-    const y2 = element2.y.animVal.value;
-    const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    pathElement.setAttribute("d", `M ${x1} ${y1} L ${x2} ${y2}`);
-    pathElement.setAttribute("stroke", color);
-    pathElement.setAttribute("stroke-width", "30");
-    pathElement.setAttribute("class", `${edgeType}_edge`);
-    pageElement.appendChild(pathElement);
+function addEdges(edgeType,jsonGraphAnnotation, pageElement, zip, color) {
+    for (const [start, end] of zip(jsonGraphAnnotation[edgeType][0], jsonGraphAnnotation[edgeType][1])) {
+        const element1 = pageElement.querySelector(`#${jsonGraphAnnotation.id[start]} use`);
+        const element2 = pageElement.querySelector(`#${jsonGraphAnnotation.id[end]} use`);
+        const x1 = element1.x.animVal.value + (element1.width.animVal.value / 5);
+        const y1 = element1.y.animVal.value;
+        const x2 = element2.x.animVal.value + (element2.width.animVal.value / 5);
+        const y2 = element2.y.animVal.value;
+        const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        pathElement.setAttribute("d", `M ${x1} ${y1} L ${x2} ${y2}`);
+        pathElement.setAttribute("stroke", color);
+        pathElement.setAttribute("stroke-width", "30");
+        pathElement.setAttribute("class", `${edgeType}_edge`);
+        pageElement.appendChild(pathElement);
+    }
 }
