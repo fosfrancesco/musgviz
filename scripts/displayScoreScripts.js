@@ -111,6 +111,43 @@ togglePotentialEdgesCheckbox.addEventListener("change", (event) => {
         element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
     });
 });
+// toggle for predicted edges
+const togglePredictedEdgesCheckbox = document.getElementById("toggle-predicted-edges");
+togglePredictedEdgesCheckbox.addEventListener("change", (event) => {
+    const predictedEdgeElements = document.querySelectorAll(".predicted_edge");
+    predictedEdgeElements.forEach((element) => {
+        element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
+    });
+}
+);
+// toggle for chord truth edges
+const toggleChordTruthEdgesCheckbox = document.getElementById("toggle-chord-truth-edges");
+toggleChordTruthEdgesCheckbox.addEventListener("change", (event) => {
+    const chordTruthEdgeElements = document.querySelectorAll(".chord_truth_edge");
+    chordTruthEdgeElements.forEach((element) => {
+        element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
+    });
+});
+// toggle for chord potential edges
+const toggleChordPotentialEdgesCheckbox = document.getElementById("toggle-chord-potential-edges");
+toggleChordPotentialEdgesCheckbox.addEventListener("change", (event) => {
+    const chordPotentialEdgeElements = document.querySelectorAll(".chord_potential_edge");
+    chordPotentialEdgeElements.forEach((element) => {
+        element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
+    });
+}
+);
+// toggle for chord predicted edges
+const toggleChordPredictedEdgesCheckbox = document.getElementById("toggle-chord-predicted-edges");
+toggleChordPredictedEdgesCheckbox.addEventListener("change", (event) => {
+    const chordPredictedEdgeElements = document.querySelectorAll(".chord_predicted_edge");
+    chordPredictedEdgeElements.forEach((element) => {
+        element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
+    });
+}
+);
+
+
 
 
 function displayScoreWithGraph(scoreFile, graph_annotation, verovioTk) {
@@ -143,6 +180,14 @@ function displayScoreWithGraph(scoreFile, graph_annotation, verovioTk) {
         addEdges("truth", graph_annotation, pageElemnt, zip, "grey");
         // add the potential edges
         addEdges("potential", graph_annotation, pageElemnt, zip, "orange");
+        // add the predicted edges
+        addEdges("predicted", graph_annotation, pageElemnt, zip, "orange");
+        // add the chord truth edges
+        addEdges("chord_truth", graph_annotation, pageElemnt, zip, "grey");
+        // add the chord potential edges
+        addEdges("chord_potential", graph_annotation, pageElemnt, zip, "orange");
+        // add the chord predicted edges
+        addEdges("chord_predicted", graph_annotation, pageElemnt, zip, "orange");
         
         // add the verovio score to the html page
         const outputDiv = document.getElementById("output");
@@ -164,6 +209,10 @@ function displayScoreWithGraph(scoreFile, graph_annotation, verovioTk) {
 // }
 
 function addEdges(edgeType,jsonGraphAnnotation, pageElement, zip, color) {
+    // if the edge type is not in the json file, return
+    if (!(edgeType in jsonGraphAnnotation)) {
+        return;
+    }
     for (const [start, end] of zip(jsonGraphAnnotation[edgeType][0], jsonGraphAnnotation[edgeType][1])) {
         const element1 = pageElement.querySelector(`#${jsonGraphAnnotation.id[start]} use`);
         const element2 = pageElement.querySelector(`#${jsonGraphAnnotation.id[end]} use`);
