@@ -68,3 +68,7 @@
     overflow-x: scroll;
     white-space: nowrap;
   }
+
+g.note.playing {
+  fill: crimson;
+}  

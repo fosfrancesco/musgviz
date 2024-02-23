@@ -15,16 +15,49 @@ verovio.module.onRuntimeInitialized = async _ => {
     let jsonData = null;
     let meiFile = null;
 
-    // // load default mei score and graph annotationsfrom static folder
-    // !!!!!!!!! this is not working due to CORS policy !!!!!!!!!
-    // const defaultScoreFile = "static/Chopin_Etude_Op.10_No.12.mei";
-    // const defaultGraphAnnotationFile = "static/Chopin_Etude_Op.10_No.12.json";
-    // fetch(defaultGraphAnnotationFile)
-    //     .then(response => response.json())
-    //     .then(jsonData => {
-    //         displayScoreWithGraph(defaultScoreFile, jsonData, tk)
-    //     })
-    // .catch(error => console.error(error));
+    /**
+     The handler to start playing the file
+    **/
+    const playMIDIHandler = function () {
+        // Get the MIDI file from the Verovio toolkit
+        let base64midi = tk.renderToMIDI();
+        // Add the data URL prefixes describing the content
+        let midiString = 'data:audio/midi;base64,' + base64midi;
+        // Pass it to play to MIDIjs
+        MIDIjs.play(midiString);
+    }
+
+    /**
+     The handler to stop playing the file
+    **/
+    const stopMIDIHandler = function () {
+        MIDIjs.stop();
+    }
+
+    const midiHightlightingHandler = function (event) {
+        // Remove the attribute 'playing' of all notes previously playing
+        let playingNotes = document.querySelectorAll('g.note.playing');
+        for (let playingNote of playingNotes) playingNote.classList.remove("playing");
+
+        // Get elements at a time in milliseconds (time from the player is in seconds)
+        let currentElements = tk.getElementsAtTime(event.time * 1000);
+
+        // Get all notes playing and set the class
+        for (note of currentElements.notes) {
+            let noteElement = document.getElementById(note);
+            if (noteElement) noteElement.classList.add("playing");
+        }
+    }
+
+    /**
+        Wire up the play stop buttons to actually work.
+    */
+    document.getElementById("playMIDI").addEventListener("click", playMIDIHandler);
+    document.getElementById("stopMIDI").addEventListener("click", stopMIDIHandler);
+    /**
+     Set the function as message callback
+    */
+    MIDIjs.player_callback = midiHightlightingHandler;
 
     // event listener for the json file input
     jsonFileInput.addEventListener("change", (event) => {
@@ -57,8 +90,9 @@ verovio.module.onRuntimeInitialized = async _ => {
             instructions.textContent = "";
         }
     });
-
+    
 }
+
 
 
 
@@ -192,6 +226,27 @@ function displayScoreWithGraph(scoreFile, graph_annotation, verovioTk) {
         // add the verovio score to the html page
         const outputDiv = document.getElementById("output");
         outputDiv.appendChild(svgElement);
+
+        //event listeners if an element with class note is clicked in the svg
+        const notes = document.querySelectorAll(".note");
+        notes.forEach((note) => {
+            note.addEventListener("click", (event) => {
+                console.log(note.id);
+                //make all edges connected to the note visible
+                const edges = document.querySelectorAll(`.${note.id}_edge`);
+                edges.forEach((edge) => {
+                    edge.setAttribute("visibility", "visible");
+                });
+                //make all edges not connected to the note invisible
+                const otherEdges = document.querySelectorAll(`[class$=_edge]:not(.${note.id}_edge)`);
+                otherEdges.forEach((edge) => {
+                    edge.setAttribute("visibility", "hidden");
+                });
+            });
+                
+    });
+
+        
     };
 }
 
@@ -225,6 +280,8 @@ function addEdges(edgeType,jsonGraphAnnotation, pageElement, zip, color) {
         pathElement.setAttribute("stroke", color);
         pathElement.setAttribute("stroke-width", "30");
         pathElement.setAttribute("class", `${edgeType}_edge`);
+        // append the id of the starting note as a class
+        pathElement.classList.add(`${jsonGraphAnnotation.id[start]}_edge`);
         pageElement.appendChild(pathElement);
     }
 }
