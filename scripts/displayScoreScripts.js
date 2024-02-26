@@ -75,6 +75,7 @@ verovio.module.onRuntimeInitialized = async _ => {
             }
         });
         reader.readAsText(file);
+        // load the json file ../static/explanations.json by deault
     });
 
     // event listener for the mei input
@@ -90,7 +91,6 @@ verovio.module.onRuntimeInitialized = async _ => {
             instructions.textContent = "";
         }
     });
-    
 }
 
 
@@ -130,56 +130,56 @@ toggleRestEdgesCheckbox.addEventListener("change", (event) => {
     });
 });
 // toggle for truth edges
-const toggleTruthEdgesCheckbox = document.getElementById("toggle-truth-edges");
-toggleTruthEdgesCheckbox.addEventListener("change", (event) => {
-    const truthEdgeElements = document.querySelectorAll(".truth_edge");
-    truthEdgeElements.forEach((element) => {
-        element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
-    });
-});
+// const toggleTruthEdgesCheckbox = document.getElementById("toggle-truth-edges");
+// toggleTruthEdgesCheckbox.addEventListener("change", (event) => {
+//     const truthEdgeElements = document.querySelectorAll(".truth_edge");
+//     truthEdgeElements.forEach((element) => {
+//         element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
+//     });
+// });
 // toggle for potential edges
-const togglePotentialEdgesCheckbox = document.getElementById("toggle-potential-edges");
-togglePotentialEdgesCheckbox.addEventListener("change", (event) => {
-    const potentialEdgeElements = document.querySelectorAll(".potential_edge");
-    potentialEdgeElements.forEach((element) => {
-        element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
-    });
-});
+// const togglePotentialEdgesCheckbox = document.getElementById("toggle-potential-edges");
+// togglePotentialEdgesCheckbox.addEventListener("change", (event) => {
+//     const potentialEdgeElements = document.querySelectorAll(".potential_edge");
+//     potentialEdgeElements.forEach((element) => {
+//         element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
+//     });
+// });
 // toggle for predicted edges
-const togglePredictedEdgesCheckbox = document.getElementById("toggle-predicted-edges");
-togglePredictedEdgesCheckbox.addEventListener("change", (event) => {
-    const predictedEdgeElements = document.querySelectorAll(".predicted_edge");
-    predictedEdgeElements.forEach((element) => {
-        element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
-    });
-}
-);
+// const togglePredictedEdgesCheckbox = document.getElementById("toggle-predicted-edges");
+// togglePredictedEdgesCheckbox.addEventListener("change", (event) => {
+//     const predictedEdgeElements = document.querySelectorAll(".predicted_edge");
+//     predictedEdgeElements.forEach((element) => {
+//         element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
+//     });
+// }
+// );
 // toggle for chord truth edges
-const toggleChordTruthEdgesCheckbox = document.getElementById("toggle-chord-truth-edges");
-toggleChordTruthEdgesCheckbox.addEventListener("change", (event) => {
-    const chordTruthEdgeElements = document.querySelectorAll(".chord_truth_edge");
-    chordTruthEdgeElements.forEach((element) => {
-        element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
-    });
-});
+// const toggleChordTruthEdgesCheckbox = document.getElementById("toggle-chord-truth-edges");
+// toggleChordTruthEdgesCheckbox.addEventListener("change", (event) => {
+//     const chordTruthEdgeElements = document.querySelectorAll(".chord_truth_edge");
+//     chordTruthEdgeElements.forEach((element) => {
+//         element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
+//     });
+// });
 // toggle for chord potential edges
-const toggleChordPotentialEdgesCheckbox = document.getElementById("toggle-chord-potential-edges");
-toggleChordPotentialEdgesCheckbox.addEventListener("change", (event) => {
-    const chordPotentialEdgeElements = document.querySelectorAll(".chord_potential_edge");
-    chordPotentialEdgeElements.forEach((element) => {
-        element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
-    });
-}
-);
+// const toggleChordPotentialEdgesCheckbox = document.getElementById("toggle-chord-potential-edges");
+// toggleChordPotentialEdgesCheckbox.addEventListener("change", (event) => {
+//     const chordPotentialEdgeElements = document.querySelectorAll(".chord_potential_edge");
+//     chordPotentialEdgeElements.forEach((element) => {
+//         element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
+//     });
+// }
+// );
 // toggle for chord predicted edges
-const toggleChordPredictedEdgesCheckbox = document.getElementById("toggle-chord-predicted-edges");
-toggleChordPredictedEdgesCheckbox.addEventListener("change", (event) => {
-    const chordPredictedEdgeElements = document.querySelectorAll(".chord_predicted_edge");
-    chordPredictedEdgeElements.forEach((element) => {
-        element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
-    });
-}
-);
+// const toggleChordPredictedEdgesCheckbox = document.getElementById("toggle-chord-predicted-edges");
+// toggleChordPredictedEdgesCheckbox.addEventListener("change", (event) => {
+//     const chordPredictedEdgeElements = document.querySelectorAll(".chord_predicted_edge");
+//     chordPredictedEdgeElements.forEach((element) => {
+//         element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
+//     });
+// }
+// );
 
 
 
@@ -208,21 +208,11 @@ function displayScoreWithGraph(scoreFile, graph_annotation, verovioTk) {
         addEdges("during", graph_annotation, pageElemnt, zip, "green");
         // add the rest edges
         addEdges("rest", graph_annotation,  pageElemnt, zip, "yellow");
+        // add the explanations
+        addExplanations(graph_annotation, pageElemnt, zip, "purple");
 
-        // add the output edges
-        // add the truth edges
-        addEdges("truth", graph_annotation, pageElemnt, zip, "grey");
-        // add the potential edges
-        addEdges("potential", graph_annotation, pageElemnt, zip, "orange");
-        // add the predicted edges
-        addEdges("predicted", graph_annotation, pageElemnt, zip, "orange");
-        // add the chord truth edges
-        addEdges("chord_truth", graph_annotation, pageElemnt, zip, "grey");
-        // add the chord potential edges
-        addEdges("chord_potential", graph_annotation, pageElemnt, zip, "orange");
-        // add the chord predicted edges
-        addEdges("chord_predicted", graph_annotation, pageElemnt, zip, "orange");
-        
+
+
         // add the verovio score to the html page
         const outputDiv = document.getElementById("output");
         outputDiv.appendChild(svgElement);
@@ -231,17 +221,40 @@ function displayScoreWithGraph(scoreFile, graph_annotation, verovioTk) {
         const notes = document.querySelectorAll(".note");
         notes.forEach((note) => {
             note.addEventListener("click", (event) => {
+                // turn all notes back to black
+                notes.forEach((note) => {
+                    note.setAttribute("fill", "black");
+                });
+                // make all the explanation edges invisible of all the note_ids
+
+
                 console.log(note.id);
-                //make all edges connected to the note visible
-                const edges = document.querySelectorAll(`.${note.id}_edge`);
-                edges.forEach((edge) => {
+                // make all the explanation edges of the note visible
+                const explanationEdges = document.querySelectorAll(`.${note.id}_explanation_edge`);
+                explanationEdges.forEach((edge) => {
                     edge.setAttribute("visibility", "visible");
                 });
-                //make all edges not connected to the note invisible
-                const otherEdges = document.querySelectorAll(`[class$=_edge]:not(.${note.id}_edge)`);
+
+                //make all edges connected to the note visible
+                // const edges = document.querySelectorAll(`.${note.id}_edge`);
+                // edges.forEach((edge) => {
+                //     edge.setAttribute("visibility", "visible");
+                // });
+                // turn the note red
+                note.setAttribute("fill", "red");
+
+                // make all the edges invisible
+                const otherEdges = document.querySelectorAll(`[class$=_edge]:not(.${note.id}_explanation_edge)`);
                 otherEdges.forEach((edge) => {
                     edge.setAttribute("visibility", "hidden");
                 });
+
+
+                //make all edges not connected to the note invisible
+                // const otherEdges = document.querySelectorAll(`[class$=_edge]:not(.${note.id}_edge)`);
+                // otherEdges.forEach((edge) => {
+                //     edge.setAttribute("visibility", "hidden");
+                // });
             });
                 
     });
@@ -283,5 +296,47 @@ function addEdges(edgeType,jsonGraphAnnotation, pageElement, zip, color) {
         // append the id of the starting note as a class
         pathElement.classList.add(`${jsonGraphAnnotation.id[start]}_edge`);
         pageElement.appendChild(pathElement);
+    }
+}
+
+
+function addExplanations(jsonGraphAnnotation, pageElement, zip, color) {
+    const note_ids = jsonGraphAnnotation["id"]
+    for (const note_idx in note_ids) {
+        const note_id = note_ids[note_idx]
+        const onset_edges = jsonGraphAnnotation[note_id]["onset"]
+        const during_edges = jsonGraphAnnotation[note_id]["during"]
+        const rest_edges = jsonGraphAnnotation[note_id]["rest"]
+        const consecutive_edges = jsonGraphAnnotation[note_id]["consecutive"]
+        // join all edges together each one is of shape [src_notes, dest_notes]
+        // concatenate all the arrays together on the first axis
+        const all_src_edges = onset_edges[0].concat(during_edges[0], rest_edges[0], consecutive_edges[0])
+        const all_dest_edges = onset_edges[1].concat(during_edges[1], rest_edges[1], consecutive_edges[1])
+        for (const [start, end] of zip(all_src_edges, all_dest_edges)) {
+            // when start or end is "," skip
+            if (start == "," || end == ",") {
+                continue;
+            }
+            const src_note = pageElement.querySelector(`#${jsonGraphAnnotation.id[start]} use`);
+            const dest_note = pageElement.querySelector(`#${jsonGraphAnnotation.id[end]} use`);
+            const x1 = src_note.x.animVal.value + (src_note.width.animVal.value / 5);
+            const y1 = src_note.y.animVal.value;
+            const x2 = dest_note.x.animVal.value + (dest_note.width.animVal.value / 5);
+            const y2 = dest_note.y.animVal.value;
+            const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            pathElement.setAttribute("d", `M ${x1} ${y1} L ${x2} ${y2}`);
+            pathElement.setAttribute("stroke", color);
+            pathElement.setAttribute("stroke-width", "20");
+            // set the line to be dashed
+            pathElement.setAttribute("stroke-dasharray", "10, 10");
+            // set the line to have opacity 0.5
+            pathElement.setAttribute("stroke-opacity", "0.5");
+            pathElement.setAttribute("class", `explanation_edge`);
+            // append the id of the starting note as a class
+            pathElement.classList.add(`${note_id}_explanation_edge`);
+            pageElement.appendChild(pathElement);
+            // make the edges invisible by default
+            pathElement.setAttribute("visibility", "hidden");
+        }
     }
 }
