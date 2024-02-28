@@ -21,7 +21,11 @@
           <label for="mei-file-input">Upload MEI score file:</label>
           <input type="file" id="mei-file-input" />
         </div>
-      </section>
+<!--        Select a directory-->
+        <div class="file-upload">
+          <label for="feature_importance_directory">Select directory with feature importances:</label>
+          <input type="file" id="feature_importance_directory" webkitdirectory directory multiple />
+        </section>
       <section>
         <h2>Audio Controls</h2>
         <button id="playMIDI">Play</button>
@@ -53,7 +57,10 @@
         <div id="instructions">Upload JSON graph annotation first.</div>
         <div id="output"></div>
       </section>
-    </main>
+      <section>
+        <h2>Feature Importance</h2>
+        <div id="feature_importance"></div>
+      </main>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="http://www.verovio.org/javascript/latest/verovio-toolkit-wasm.js" defer></script>
     <script src="scripts/displayScoreScripts.js" defer></script>

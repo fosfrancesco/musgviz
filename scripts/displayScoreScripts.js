@@ -10,6 +10,7 @@ verovio.module.onRuntimeInitialized = async _ => {
     const output = document.getElementById("output");
     const instructions = document.getElementById("instructions");
     const meifileInput = document.getElementById("mei-file-input");
+    const feature_importance_directory = document.getElementById("feature_importance_directory");
     const jsonFileInput = document.getElementById("json-file-input");
 
     let jsonData = null;
@@ -91,6 +92,60 @@ verovio.module.onRuntimeInitialized = async _ => {
             instructions.textContent = "";
         }
     });
+
+    // get the feature importance html element
+    const feature_importance = document.getElementById("feature_importance");
+    // event listener for the feature importance directory input
+    // it finds all the png files in the directory and saves them as assets in the html for later
+    feature_importance_directory.addEventListener('change', function() {
+        var directory = this.files; // this will be a FileList object with all selected files (not only the directory)
+        for (var i = 0; i < directory.length; i++) {
+            console.log(directory[i].webkitRelativePath); // this will give you the relative path of each file
+            if (directory[i].type === "image/png") {
+                // create an image element and name it after the file name without the extension
+                const img = document.createElement("img");
+                // make the image hidden
+                img.style.display = "none";
+                // set the src of the image to the file path
+                img.src = URL.createObjectURL(directory[i]);
+                // set the id of the image to the file name without the extension
+                img.id = directory[i].name.split(".")[0];
+                // append the image to the body
+                feature_importance.appendChild(img);
+                // position in the middle of the page relative to the score
+                img.style.position = "absolute";
+                img.style.left = "50%";
+                // the image should be saved inside a folder called static/explanations
+
+                }
+            }
+        }
+    );
+
+        // const pickerOpts = {
+        //   types: [
+        //     {
+        //       description: "Images",
+        //       accept: {
+        //         "static/explanations/*": [".png", ".jpeg", ".jpg"],
+        //       },
+        //     },
+        //   ],
+        //   excludeAcceptAllOption: true,
+        //   multiple: true,
+        // };
+        //
+        // async function getTheFile() {
+        //   // Open file picker and destructure the result the first handle
+        //   const [fileHandle] = await window.showOpenFilePicker(pickerOpts);
+        //
+        //   // get file contents
+        //   const fileData = await fileHandle.getFile();
+        // }
+    // });
+
+
+
 }
 
 
@@ -213,6 +268,7 @@ function displayScoreWithGraph(scoreFile, graph_annotation, verovioTk) {
 
 
 
+
         // add the verovio score to the html page
         const outputDiv = document.getElementById("output");
         outputDiv.appendChild(svgElement);
@@ -243,18 +299,38 @@ function displayScoreWithGraph(scoreFile, graph_annotation, verovioTk) {
                 // turn the note red
                 note.setAttribute("fill", "red");
 
+                // make the feature_importance element called feature_importance_note_id visible
+                const featureImportance = document.getElementById("feature_importance");
+                featureImportance.style.display = "block";
+                // make only the image of the note_id visible
+                const images = document.querySelectorAll("img");
+                images.forEach((img) => {
+                    img.style.display = "none";
+                });
+
+
+
+
                 // make all the edges invisible
                 const otherEdges = document.querySelectorAll(`[class$=_edge]:not(.${note.id}_explanation_edge)`);
                 otherEdges.forEach((edge) => {
                     edge.setAttribute("visibility", "hidden");
                 });
 
+                // open an image from ../static/explanations/feature_important_note_id.png and preview it below the score as part of div feature_explanation
+                const featureExplanation = document.getElementById("feature_explanation");
+                // featureExplanation.innerHTML = "";
+                // const img = document.createElement("img");
+                // // find the currect file path of this script
+                // const path = window.location.pathname;
+                // const page = path.split("/").pop();
+                // // get the image relative path "../static/explanations/feature_important_note_id.png"
+                // img.src = `/static/explanations/feature_important_${note.id}.png`;
+                // featureExplanation.appendChild(img);
+                // // add title to the image to say "Feature Importance of note_id"
+                // const title = document.createElement("h3");
+                // title.textContent = `Feature Importance of ${note.id}`;
 
-                //make all edges not connected to the note invisible
-                // const otherEdges = document.querySelectorAll(`[class$=_edge]:not(.${note.id}_edge)`);
-                // otherEdges.forEach((edge) => {
-                //     edge.setAttribute("visibility", "hidden");
-                // });
             });
                 
     });
@@ -340,3 +416,4 @@ function addExplanations(jsonGraphAnnotation, pageElement, zip, color) {
         }
     }
 }
+
