@@ -93,59 +93,34 @@ verovio.module.onRuntimeInitialized = async _ => {
         }
     });
 
-    // get the feature importance html element
-    const feature_importance = document.getElementById("feature_importance");
-    // event listener for the feature importance directory input
-    // it finds all the png files in the directory and saves them as assets in the html for later
-    feature_importance_directory.addEventListener('change', function() {
-        var directory = this.files; // this will be a FileList object with all selected files (not only the directory)
-        for (var i = 0; i < directory.length; i++) {
-            console.log(directory[i].webkitRelativePath); // this will give you the relative path of each file
-            if (directory[i].type === "image/png") {
-                // create an image element and name it after the file name without the extension
-                const img = document.createElement("img");
-                // make the image hidden
-                img.style.display = "none";
-                // set the src of the image to the file path
-                img.src = URL.createObjectURL(directory[i]);
-                // set the id of the image to the file name without the extension
-                img.id = directory[i].name.split(".")[0];
-                // append the image to the body
-                feature_importance.appendChild(img);
-                // position in the middle of the page relative to the score
-                img.style.position = "absolute";
-                img.style.left = "50%";
-                // the image should be saved inside a folder called static/explanations
-
-                }
-            }
-        }
-    );
-
-        // const pickerOpts = {
-        //   types: [
-        //     {
-        //       description: "Images",
-        //       accept: {
-        //         "static/explanations/*": [".png", ".jpeg", ".jpg"],
-        //       },
-        //     },
-        //   ],
-        //   excludeAcceptAllOption: true,
-        //   multiple: true,
-        // };
-        //
-        // async function getTheFile() {
-        //   // Open file picker and destructure the result the first handle
-        //   const [fileHandle] = await window.showOpenFilePicker(pickerOpts);
-        //
-        //   // get file contents
-        //   const fileData = await fileHandle.getFile();
-        // }
-    // });
-
-
-
+    // // get the feature importance html element
+    // const feature_importance = document.getElementById("feature_importance");
+    // // event listener for the feature importance directory input
+    // // it finds all the png files in the directory and saves them as assets in the html for later
+    // feature_importance_directory.addEventListener('change', function() {
+    //     var directory = this.files; // this will be a FileList object with all selected files (not only the directory)
+    //     for (var i = 0; i < directory.length; i++) {
+    //         console.log(directory[i].webkitRelativePath); // this will give you the relative path of each file
+    //         if (directory[i].type === "image/png") {
+    //             // create an image element and name it after the file name without the extension
+    //             const img = document.createElement("img");
+    //             // make the image hidden
+    //             img.style.display = "none";
+    //             // set the src of the image to the file path
+    //             img.src = URL.createObjectURL(directory[i]);
+    //             // set the id of the image to the file name without the extension
+    //             img.id = directory[i].name.split(".")[0];
+    //             // append the image to the body
+    //             feature_importance.appendChild(img);
+    //             // position in the middle of the page relative to the score
+    //             img.style.position = "absolute";
+    //             img.style.left = "50%";
+    //             // the image should be saved inside a folder called static/explanations
+    //
+    //             }
+    //         }
+    //     }
+    // );
 }
 
 
@@ -319,17 +294,17 @@ function displayScoreWithGraph(scoreFile, graph_annotation, verovioTk) {
 
                 // open an image from ../static/explanations/feature_important_note_id.png and preview it below the score as part of div feature_explanation
                 const featureExplanation = document.getElementById("feature_explanation");
-                // featureExplanation.innerHTML = "";
-                // const img = document.createElement("img");
-                // // find the currect file path of this script
-                // const path = window.location.pathname;
-                // const page = path.split("/").pop();
-                // // get the image relative path "../static/explanations/feature_important_note_id.png"
-                // img.src = `/static/explanations/feature_important_${note.id}.png`;
-                // featureExplanation.appendChild(img);
-                // // add title to the image to say "Feature Importance of note_id"
-                // const title = document.createElement("h3");
-                // title.textContent = `Feature Importance of ${note.id}`;
+                featureExplanation.innerHTML = "";
+                const img = document.createElement("img");
+                // find the currect file path of this script
+                const path = window.location.pathname;
+                const page = path.split("/").pop();
+                // get the image relative path "../static/explanations/feature_important_note_id.png"
+                img.src = `/static/explanations/feature_important_${note.id}.png`;
+                featureExplanation.appendChild(img);
+                // add title to the image to say "Feature Importance of note_id"
+                const title = document.createElement("h3");
+                title.textContent = `Feature Importance of ${note.id}`;
 
             });
                 
@@ -380,6 +355,10 @@ function addExplanations(jsonGraphAnnotation, pageElement, zip, color) {
     const note_ids = jsonGraphAnnotation["id"]
     for (const note_idx in note_ids) {
         const note_id = note_ids[note_idx]
+        // check if note_id is in the jsonGraphAnnotation
+        if (!(note_id in jsonGraphAnnotation)) {
+            continue;
+        }
         const onset_edges = jsonGraphAnnotation[note_id]["onset"]
         const during_edges = jsonGraphAnnotation[note_id]["during"]
         const rest_edges = jsonGraphAnnotation[note_id]["rest"]
