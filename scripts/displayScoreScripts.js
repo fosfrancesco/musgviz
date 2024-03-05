@@ -256,8 +256,6 @@ function displayScoreWithGraph(scoreFile, graph_annotation, verovioTk) {
                 notes.forEach((note) => {
                     note.setAttribute("fill", "black");
                 });
-                // make all the explanation edges invisible of all the note_ids
-
 
                 console.log(note.id);
                 // make all the explanation edges of the note visible
@@ -266,24 +264,19 @@ function displayScoreWithGraph(scoreFile, graph_annotation, verovioTk) {
                     edge.setAttribute("visibility", "visible");
                 });
 
-                //make all edges connected to the note visible
-                // const edges = document.querySelectorAll(`.${note.id}_edge`);
-                // edges.forEach((edge) => {
-                //     edge.setAttribute("visibility", "visible");
-                // });
                 // turn the note red
                 note.setAttribute("fill", "red");
 
-                // make the feature_importance element called feature_importance_note_id visible
-                const featureImportance = document.getElementById("feature_importance");
-                featureImportance.style.display = "block";
-                // make only the image of the note_id visible
-                const images = document.querySelectorAll("img");
-                images.forEach((img) => {
-                    img.style.display = "none";
-                });
-
-
+                // // make the feature_importance element called feature_importance_note_id visible
+                // const featureImportance = document.getElementById("feature_importance");
+                // featureImportance.style.display = "block";
+                // // make only the image of the note_id visible
+                // const images = document.querySelectorAll("img");
+                // images.forEach((img) => {
+                //     img.style.display = "none";
+                // });
+                // print the feature_importance values in the feature_importance div element
+                print_feature_importance(graph_annotation, note.id);
 
 
                 // make all the edges invisible
@@ -292,19 +285,19 @@ function displayScoreWithGraph(scoreFile, graph_annotation, verovioTk) {
                     edge.setAttribute("visibility", "hidden");
                 });
 
-                // open an image from ../static/explanations/feature_important_note_id.png and preview it below the score as part of div feature_explanation
-                const featureExplanation = document.getElementById("feature_explanation");
-                featureExplanation.innerHTML = "";
-                const img = document.createElement("img");
-                // find the currect file path of this script
-                const path = window.location.pathname;
-                const page = path.split("/").pop();
-                // get the image relative path "../static/explanations/feature_important_note_id.png"
-                img.src = `/static/explanations/feature_important_${note.id}.png`;
-                featureExplanation.appendChild(img);
-                // add title to the image to say "Feature Importance of note_id"
-                const title = document.createElement("h3");
-                title.textContent = `Feature Importance of ${note.id}`;
+                // // open an image from ../static/explanations/feature_important_note_id.png and preview it below the score as part of div feature_explanation
+                // const featureExplanation = document.getElementById("feature_explanation");
+                // featureExplanation.innerHTML = "";
+                // const img = document.createElement("img");
+                // // find the currect file path of this script
+                // const path = window.location.pathname;
+                // const page = path.split("/").pop();
+                // // get the image relative path "../static/explanations/feature_important_note_id.png"
+                // img.src = `/static/explanations/feature_important_${note.id}.png`;
+                // featureExplanation.appendChild(img);
+                // // add title to the image to say "Feature Importance of note_id"
+                // const title = document.createElement("h3");
+                // title.textContent = `Feature Importance of ${note.id}`;
 
             });
                 
@@ -396,3 +389,44 @@ function addExplanations(jsonGraphAnnotation, pageElement, zip, color) {
     }
 }
 
+
+function print_feature_importance(jsonData, note_id) {
+    const feature_importance = document.getElementById("feature_importance");
+    feature_importance.innerHTML = "";
+    const feature_importance_note_id = jsonData[note_id];
+    // if null then pass
+    if (feature_importance_note_id === undefined) {
+        return;
+    }
+    fi_entries = Object.entries(feature_importance_note_id["feature_importance"]);
+    // sort dictionary entries by their value inversely
+    // const sorted_fi_dict = Object.entries(fi_dict).sort((a, b) => b[1] - a[1]);
+    // only consider the first 10 entries
+    // const top_10_fi_dict = sorted_fi_dict.slice(0, 10);
+    // // print the top 10 feature importance in the feature_importance div element
+    // for (const [feature, importance] of top_10_fi_dict) {
+    //     const p = document.createElement("p");
+    //     p.textContent = `${feature}: ${importance}`;
+    //     feature_importance.appendChild(p);
+    // }
+    // display the first 10 entries with a bar plot
+    // display the first 10 entries with a bar plot
+    const data = [{
+    x: fi_entries.map(entry => entry[0]),
+    y: fi_entries.map(entry => entry[1]),
+    type: 'bar'
+    }];
+
+    const layout = {
+        title: 'Feature Importance',
+        xaxis: {
+            title: 'Feature',
+        },
+        yaxis: {
+            title: 'Importance',
+        }
+    };
+
+    Plotly.newPlot('feature_importance', data, layout);
+
+}
