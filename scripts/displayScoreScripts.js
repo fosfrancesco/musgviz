@@ -4,7 +4,12 @@ verovio.module.onRuntimeInitialized = async _ => {
     const tk = new verovio.toolkit();
     console.log("Verovio has loaded!");
     tk.setOptions({
-        breaks: 'none'
+        breaks: 'none',
+        header:  'none',
+        adjustPageHeight: true,
+        pageMarginBottom: 0,
+        pageMarginTop: 0,
+        scaleToPageSize: true,        
         });  
 
     const output = document.getElementById("output");
@@ -33,6 +38,9 @@ verovio.module.onRuntimeInitialized = async _ => {
     **/
     const stopMIDIHandler = function () {
         MIDIjs.stop();
+        // remove class "playing" from all notes
+        let playingNotes = document.querySelectorAll('g.note.playing');
+        for (let playingNote of playingNotes) playingNote.classList.remove("playing");
     }
 
     const midiHightlightingHandler = function (event) {
@@ -68,7 +76,7 @@ verovio.module.onRuntimeInitialized = async _ => {
             jsonData = JSON.parse(event.target.result); // Store the parsed JSON data in the global variable
             if (meiFile !== null) {
                 displayScoreWithGraph(meiFile, jsonData, tk);
-                instructions.textContent = "";
+                instructions.textContent = "Click on notes corresponding to cadences to display explanations.";
             }
             else {
                 instructions.textContent = "Upload MEI score";
@@ -84,81 +92,105 @@ verovio.module.onRuntimeInitialized = async _ => {
         meiFile = event.target.files[0];
         // check if the json file has been uploaded
         if (jsonData === null) {
-            instructions.textContent = "Please upload the JSON file first";
+            instructions.textContent = "Upload the JSON file first";
             return;
         }
         else {
             displayScoreWithGraph(meiFile, jsonData, tk);
-            instructions.textContent = "";
+            instructions.textContent = "Use toggle above to move between Input graph and explanations.";
         }
     });
 
-    // // get the feature importance html element
-    // const feature_importance = document.getElementById("feature_importance");
-    // // event listener for the feature importance directory input
-    // // it finds all the png files in the directory and saves them as assets in the html for later
-    // feature_importance_directory.addEventListener('change', function() {
-    //     var directory = this.files; // this will be a FileList object with all selected files (not only the directory)
-    //     for (var i = 0; i < directory.length; i++) {
-    //         console.log(directory[i].webkitRelativePath); // this will give you the relative path of each file
-    //         if (directory[i].type === "image/png") {
-    //             // create an image element and name it after the file name without the extension
-    //             const img = document.createElement("img");
-    //             // make the image hidden
-    //             img.style.display = "none";
-    //             // set the src of the image to the file path
-    //             img.src = URL.createObjectURL(directory[i]);
-    //             // set the id of the image to the file name without the extension
-    //             img.id = directory[i].name.split(".")[0];
-    //             // append the image to the body
-    //             feature_importance.appendChild(img);
-    //             // position in the middle of the page relative to the score
-    //             img.style.position = "absolute";
-    //             img.style.left = "50%";
-    //             // the image should be saved inside a folder called static/explanations
-    //
-    //             }
-    //         }
-    //     }
-    // );
+    // event listeners for the toggle checkboxes
+    document.getElementById('inputGraphButton').addEventListener('click', function() {
+        this.classList.add('active');
+        document.getElementById('explanationsButton').classList.remove('active');
+        // remove all html inside feature_importance div
+        const feature_importance = document.getElementById("feature_importance");
+        feature_importance.innerHTML = "";
+
+        // remove "clicked" class from all notes that have it
+        const clickedNotes = document.querySelectorAll(".clicked");
+        clickedNotes.forEach((note) => {
+            note.classList.remove("clicked");
+        });
+
+
+        // hide all elements whose class ends with "_explanation_edge"
+        const explanationEdges = document.querySelectorAll("[class$=_explanation_edge]");
+        explanationEdges.forEach((edge) => {
+            edge.setAttribute("visibility", "hidden");
+        });
+        // show all elements whose call ends with "_input_edge"
+        const inputEdges = document.querySelectorAll("[class$=_input_edge]");
+        inputEdges.forEach((edge) => {
+            edge.setAttribute("visibility", "visible");
+        });
+        //describe the colors and the kind of _input_edge
+        instructions.innerHTML = '<span style="color: red;">Red:</span> consecutive, <span style="color: blue;">Blue:</span> onset, <span style="color: green;">Green:</span> during, <span style="color: yellow;">Yellow:</span> rest';
+        //remove "annotated" class to notes that have it
+        const annotatedNotes = document.querySelectorAll(".annotated");
+        annotatedNotes.forEach((note) => {
+            note.classList.remove("annotated");
+        });
+    });
+
+    document.getElementById('explanationsButton').addEventListener('click', function() {
+        this.classList.add('active');
+        document.getElementById('inputGraphButton').classList.remove('active');
+        // hide all elements whose class ends with "_input_edge"
+        const inputEdges = document.querySelectorAll("[class$=_input_edge]");
+        inputEdges.forEach((edge) => {
+            edge.setAttribute("visibility", "hidden");
+        }
+        );
+        print_empty_feature_importance(jsonData);
+        // // show all elements whose call ends with "_explanation_edge"
+        // const explanationEdges = document.querySelectorAll("[class$=_explanation_edge]");
+        // explanationEdges.forEach((edge) => {
+        //     edge.setAttribute("visibility", "visible");
+        // }
+        // );
+        //set text in the instructions div
+        instructions.textContent = "Click on notes corresponding to cadences to display explanations.";
+        // add color to annotated notes
+        add_color_to_cadenza_notes(jsonData);
+    });
 }
 
 
-
-
-// event listeners for the toggle checkboxes
-// toggle for consecutive edges
-const toggleConsecutiveEdgesCheckbox = document.getElementById("toggle-consecutive-edges");
-toggleConsecutiveEdgesCheckbox.addEventListener("change", (event) => {
-    const consecutiveEdgeElements = document.querySelectorAll(".consecutive_edge");
-    consecutiveEdgeElements.forEach((element) => {
-        element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
-    });
-});
-// toggle for onset edges
-const toggleOnsetEdgesCheckbox = document.getElementById("toggle-onset-edges");
-toggleOnsetEdgesCheckbox.addEventListener("change", (event) => {
-    const onsetEdgeElements = document.querySelectorAll(".onset_edge");
-    onsetEdgeElements.forEach((element) => {
-        element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
-    });
-});
-// toggle for during edges
-const toggleDuringEdgesCheckbox = document.getElementById("toggle-during-edges");
-toggleDuringEdgesCheckbox.addEventListener("change", (event) => {
-    const duringEdgeElements = document.querySelectorAll(".during_edge");
-    duringEdgeElements.forEach((element) => {
-        element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
-    });
-});
-// toggle for rest edges
-const toggleRestEdgesCheckbox = document.getElementById("toggle-rest-edges");
-toggleRestEdgesCheckbox.addEventListener("change", (event) => {
-    const restEdgeElements = document.querySelectorAll(".rest_edge");
-    restEdgeElements.forEach((element) => {
-        element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
-    });
-});
+// // toggle for consecutive edges
+// const toggleConsecutiveEdgesCheckbox = document.getElementById("toggle-consecutive-edges");
+// toggleConsecutiveEdgesCheckbox.addEventListener("change", (event) => {
+//     const consecutiveEdgeElements = document.querySelectorAll(".consecutive_edge");
+//     consecutiveEdgeElements.forEach((element) => {
+//         element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
+//     });
+// });
+// // toggle for onset edges
+// const toggleOnsetEdgesCheckbox = document.getElementById("toggle-onset-edges");
+// toggleOnsetEdgesCheckbox.addEventListener("change", (event) => {
+//     const onsetEdgeElements = document.querySelectorAll(".onset_edge");
+//     onsetEdgeElements.forEach((element) => {
+//         element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
+//     });
+// });
+// // toggle for during edges
+// const toggleDuringEdgesCheckbox = document.getElementById("toggle-during-edges");
+// toggleDuringEdgesCheckbox.addEventListener("change", (event) => {
+//     const duringEdgeElements = document.querySelectorAll(".during_edge");
+//     duringEdgeElements.forEach((element) => {
+//         element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
+//     });
+// });
+// // toggle for rest edges
+// const toggleRestEdgesCheckbox = document.getElementById("toggle-rest-edges");
+// toggleRestEdgesCheckbox.addEventListener("change", (event) => {
+//     const restEdgeElements = document.querySelectorAll(".rest_edge");
+//     restEdgeElements.forEach((element) => {
+//         element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
+//     });
+// });
 // toggle for truth edges
 // const toggleTruthEdgesCheckbox = document.getElementById("toggle-truth-edges");
 // toggleTruthEdgesCheckbox.addEventListener("change", (event) => {
@@ -252,52 +284,35 @@ function displayScoreWithGraph(scoreFile, graph_annotation, verovioTk) {
         const notes = document.querySelectorAll(".note");
         notes.forEach((note) => {
             note.addEventListener("click", (event) => {
-                // turn all notes back to black
-                notes.forEach((note) => {
-                    note.setAttribute("fill", "black");
+                // remove "clicked" class from all the notes that have that
+                const clickedNotes = document.querySelectorAll(".clicked");
+                clickedNotes.forEach((note) => {
+                    note.classList.remove("clicked");
                 });
-
-                console.log(note.id);
-                // make all the explanation edges of the note visible
-                const explanationEdges = document.querySelectorAll(`.${note.id}_explanation_edge`);
-                explanationEdges.forEach((edge) => {
-                    edge.setAttribute("visibility", "visible");
-                });
-
-                // turn the note red
-                note.setAttribute("fill", "red");
-
-                // // make the feature_importance element called feature_importance_note_id visible
-                // const featureImportance = document.getElementById("feature_importance");
-                // featureImportance.style.display = "block";
-                // // make only the image of the note_id visible
-                // const images = document.querySelectorAll("img");
-                // images.forEach((img) => {
-                //     img.style.display = "none";
-                // });
-                // print the feature_importance values in the feature_importance div element
-                print_feature_importance(graph_annotation, note.id);
-
-
-                // make all the edges invisible
+                
+                // make all the other edges invisible
                 const otherEdges = document.querySelectorAll(`[class$=_edge]:not(.${note.id}_explanation_edge)`);
                 otherEdges.forEach((edge) => {
                     edge.setAttribute("visibility", "hidden");
                 });
 
-                // // open an image from ../static/explanations/feature_important_note_id.png and preview it below the score as part of div feature_explanation
-                // const featureExplanation = document.getElementById("feature_explanation");
-                // featureExplanation.innerHTML = "";
-                // const img = document.createElement("img");
-                // // find the currect file path of this script
-                // const path = window.location.pathname;
-                // const page = path.split("/").pop();
-                // // get the image relative path "../static/explanations/feature_important_note_id.png"
-                // img.src = `/static/explanations/feature_important_${note.id}.png`;
-                // featureExplanation.appendChild(img);
-                // // add title to the image to say "Feature Importance of note_id"
-                // const title = document.createElement("h3");
-                // title.textContent = `Feature Importance of ${note.id}`;
+                console.log(note.id);
+                if (document.getElementById('explanationsButton').classList.contains('active')) {
+                
+                    // make all the explanation edges of the note visible
+                    const explanationEdges = document.querySelectorAll(`.${note.id}_explanation_edge`);
+                    explanationEdges.forEach((edge) => {
+                        edge.setAttribute("visibility", "visible");
+                    });
+
+                    // add clicked class
+                    note.classList.add("clicked");
+
+                    // print the feature_importance values in the feature_importance div element
+                    print_feature_importance(graph_annotation, note.id);
+
+
+                }
 
             });
                 
@@ -338,8 +353,12 @@ function addEdges(edgeType,jsonGraphAnnotation, pageElement, zip, color) {
         pathElement.setAttribute("stroke-width", "30");
         pathElement.setAttribute("class", `${edgeType}_edge`);
         // append the id of the starting note as a class
-        pathElement.classList.add(`${jsonGraphAnnotation.id[start]}_edge`);
+        pathElement.classList.add(`${jsonGraphAnnotation.id[start]}_input_edge`);
         pageElement.appendChild(pathElement);
+        // make the edges invisible by default
+        pathElement.setAttribute("visibility", "hidden");
+        // set opacity to 0.5
+        pathElement.setAttribute("stroke-opacity", "0.5");
     }
 }
 
@@ -396,7 +415,7 @@ function print_feature_importance(jsonData, note_id) {
     const feature_importance_note_id = jsonData[note_id];
     // if null then pass
     if (feature_importance_note_id === undefined) {
-        return;
+        print_empty_feature_importance(jsonData)
     }
     fi_entries = Object.entries(feature_importance_note_id["feature_importance"]);
     // sort dictionary entries by their value inversely
@@ -418,7 +437,68 @@ function print_feature_importance(jsonData, note_id) {
     }];
 
     const layout = {
-        title: 'Feature Importance',
+        xaxis: {
+            title: 'Feature',
+        },
+        yaxis: {
+            title: 'Importance',
+        }
+    };
+
+    Plotly.newPlot('feature_importance', data, layout);
+
+}
+
+function add_color_to_cadenza_notes(jsonData) {
+    const note_ids = jsonData["id"]
+    for (const note_idx in note_ids) {
+        const note_id = note_ids[note_idx]
+        // check if note_id is in the jsonGraphAnnotation
+        if (!(note_id in jsonData)) {
+            continue;
+        }
+        const note = document.getElementById(note_id);
+        // add class "annotated"
+        note.classList.add("annotated");
+    }
+}
+
+
+
+function print_empty_feature_importance(jsonData) {
+    const feature_importance = document.getElementById("feature_importance");
+    feature_importance.innerHTML = "";
+    const all_ids = jsonData["id"]
+    // take one random id in all_ids for which jsonData[note_id]!=undefined
+    let note_id = null;
+    for (const id of all_ids) {
+        if (jsonData[id] !== undefined) {
+            note_id = id;
+            break;
+        }
+    }
+    const feature_importance_note_id = jsonData[note_id];
+    fi_entries = Object.entries(feature_importance_note_id["feature_importance"]);
+    // sort dictionary entries by their value inversely
+    // const sorted_fi_dict = Object.entries(fi_dict).sort((a, b) => b[1] - a[1]);
+    // only consider the first 10 entries
+    // const top_10_fi_dict = sorted_fi_dict.slice(0, 10);
+    // // print the top 10 feature importance in the feature_importance div element
+    // for (const [feature, importance] of top_10_fi_dict) {
+    //     const p = document.createElement("p");
+    //     p.textContent = `${feature}: ${importance}`;
+    //     feature_importance.appendChild(p);
+    // }
+    // display the first 10 entries with a bar plot
+    // display the first 10 entries with a bar plot
+    const data = [{
+    x: fi_entries.map(entry => entry[0]),
+    //y is all 0
+    y: fi_entries.map(entry => 0),
+    type: 'bar'
+    }];
+
+    const layout = {
         xaxis: {
             title: 'Feature',
         },

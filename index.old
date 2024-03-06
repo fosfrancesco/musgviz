@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Score Graph Visualization</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Score Graph Visualization</h1>
+    </header>
+    <main>
+      <section>
+        <h2>Upload Files</h2>
+        <div class="file-upload">
+          <label for="json-file-input">Upload JSON graph annotation:</label>
+          <input type="file" id="json-file-input" />
+        </div>
+        <div class="file-upload">
+          <label for="mei-file-input">Upload MEI score file:</label>
+          <input type="file" id="mei-file-input" />
+        </div>
+      </section>
+      <section>
+        <h2>Audio Controls</h2>
+        <button id="playMIDI">Play</button>
+        <button id="stopMIDI">Stop</button>
+      </section>
+      <section>
+        <h2>Options</h2>
+        <div id="checkbox-container">
+          <div>
+            <input type="checkbox" id="toggle-onset-edges" checked />
+            <label for="toggle-onset-edges">Onset</label>
+          </div>
+          <div>
+            <input type="checkbox" id="toggle-during-edges" checked />
+            <label for="toggle-during-edges">During</label>
+          </div>
+          <div>
+            <input type="checkbox" id="toggle-rest-edges" checked />
+            <label for="toggle-rest-edges">Rest</label>
+          </div>
+          <div>
+            <input type="checkbox" id="toggle-consecutive-edges" checked />
+            <label for="toggle-consecutive-edges">Consecutive</label>
+          </div>
+        </div>
+      </section>
+      <section>
+        <h2>Output</h2>
+        <div id="instructions">Upload JSON graph annotation first.</div>
+        <div id="output"></div>
+      </section>
+      <section>
+        <h2>Musical score</h2>
+        <div id="musical_score"></div>
+      <section>
+        <h2>Feature Importance</h2>
+        <div id="feature_importance"></div>
+      </section>
+    </main>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="http://www.verovio.org/javascript/latest/verovio-toolkit-wasm.js" defer></script>
+    <script src="scripts/displayScoreScripts.js" defer></script>
+    <script src='https://www.midijs.net/lib/midi.js'></script> <!-- A JavaScript MIDI player -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  </body>
+</html>
