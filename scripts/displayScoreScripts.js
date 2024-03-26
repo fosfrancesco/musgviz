@@ -94,95 +94,54 @@ verovio.module.onRuntimeInitialized = async _ => {
 }
 
 
-
-
 // event listeners for the toggle checkboxes
 // toggle for consecutive edges
-const toggleConsecutiveEdgesCheckbox = document.getElementById("toggle-consecutive-edges");
-toggleConsecutiveEdgesCheckbox.addEventListener("change", (event) => {
+const toggleInputGraphCheckbox = document.getElementById("toggle-input-graph");
+toggleInputGraphCheckbox.addEventListener("change", (event) => {
     const consecutiveEdgeElements = document.querySelectorAll(".consecutive_edge");
     consecutiveEdgeElements.forEach((element) => {
         element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
     });
-});
-// toggle for onset edges
-const toggleOnsetEdgesCheckbox = document.getElementById("toggle-onset-edges");
-toggleOnsetEdgesCheckbox.addEventListener("change", (event) => {
     const onsetEdgeElements = document.querySelectorAll(".onset_edge");
     onsetEdgeElements.forEach((element) => {
         element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
     });
-});
-// toggle for during edges
-const toggleDuringEdgesCheckbox = document.getElementById("toggle-during-edges");
-toggleDuringEdgesCheckbox.addEventListener("change", (event) => {
     const duringEdgeElements = document.querySelectorAll(".during_edge");
     duringEdgeElements.forEach((element) => {
         element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
     });
-});
-// toggle for rest edges
-const toggleRestEdgesCheckbox = document.getElementById("toggle-rest-edges");
-toggleRestEdgesCheckbox.addEventListener("change", (event) => {
     const restEdgeElements = document.querySelectorAll(".rest_edge");
     restEdgeElements.forEach((element) => {
         element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
     });
 });
-// toggle for truth edges
-const toggleTruthEdgesCheckbox = document.getElementById("toggle-truth-edges");
-toggleTruthEdgesCheckbox.addEventListener("change", (event) => {
-    const truthEdgeElements = document.querySelectorAll(".truth_edge");
-    truthEdgeElements.forEach((element) => {
-        element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
-    });
-});
+
 // toggle for potential edges
-const togglePotentialEdgesCheckbox = document.getElementById("toggle-potential-edges");
-togglePotentialEdgesCheckbox.addEventListener("change", (event) => {
+const togglePotentialGraphCheckbox = document.getElementById("toggle-potential-graph");
+togglePotentialGraphCheckbox.addEventListener("change", (event) => {
     const potentialEdgeElements = document.querySelectorAll(".potential_edge");
     potentialEdgeElements.forEach((element) => {
         element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
     });
-});
-// toggle for predicted edges
-const togglePredictedEdgesCheckbox = document.getElementById("toggle-predicted-edges");
-togglePredictedEdgesCheckbox.addEventListener("change", (event) => {
-    const predictedEdgeElements = document.querySelectorAll(".predicted_edge");
-    predictedEdgeElements.forEach((element) => {
-        element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
-    });
-}
-);
-// toggle for chord truth edges
-const toggleChordTruthEdgesCheckbox = document.getElementById("toggle-chord-truth-edges");
-toggleChordTruthEdgesCheckbox.addEventListener("change", (event) => {
-    const chordTruthEdgeElements = document.querySelectorAll(".chord_truth_edge");
+    const chordTruthEdgeElements = document.querySelectorAll(".chord_potential_edge");
     chordTruthEdgeElements.forEach((element) => {
         element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
     });
 });
-// toggle for chord potential edges
-const toggleChordPotentialEdgesCheckbox = document.getElementById("toggle-chord-potential-edges");
-toggleChordPotentialEdgesCheckbox.addEventListener("change", (event) => {
-    const chordPotentialEdgeElements = document.querySelectorAll(".chord_potential_edge");
-    chordPotentialEdgeElements.forEach((element) => {
+
+// toggle for predicted edges
+const toggleOutputGraphCheckbox = document.getElementById("toggle-output-graph");
+toggleOutputGraphCheckbox.addEventListener("change", (event) => {
+    const predictedEdgeElements = document.querySelectorAll(".predicted_edge");
+    predictedEdgeElements.forEach((element) => {
         element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
     });
-}
-);
-// toggle for chord predicted edges
-const toggleChordPredictedEdgesCheckbox = document.getElementById("toggle-chord-predicted-edges");
-toggleChordPredictedEdgesCheckbox.addEventListener("change", (event) => {
     const chordPredictedEdgeElements = document.querySelectorAll(".chord_predicted_edge");
     chordPredictedEdgeElements.forEach((element) => {
         element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
     });
 }
 );
-
-
-
 
 function displayScoreWithGraph(scoreFile, graph_annotation, verovioTk) {
     const reader = new FileReader();
@@ -219,49 +178,16 @@ function displayScoreWithGraph(scoreFile, graph_annotation, verovioTk) {
         // add the chord truth edges
         addEdges("chord_truth", graph_annotation, pageElemnt, zip, "grey");
         // add the chord potential edges
-        addEdges("chord_potential", graph_annotation, pageElemnt, zip, "orange");
+        addEdges("chord_potential", graph_annotation, pageElemnt, zip, "blue");
         // add the chord predicted edges
-        addEdges("chord_predicted", graph_annotation, pageElemnt, zip, "orange");
+        addEdges("chord_predicted", graph_annotation, pageElemnt, zip, "blue");
         
         // add the verovio score to the html page
         const outputDiv = document.getElementById("output");
         outputDiv.appendChild(svgElement);
 
-        //event listeners if an element with class note is clicked in the svg
-        const notes = document.querySelectorAll(".note");
-        notes.forEach((note) => {
-            note.addEventListener("click", (event) => {
-                console.log(note.id);
-                //make all edges connected to the note visible
-                const edges = document.querySelectorAll(`.${note.id}_edge`);
-                edges.forEach((edge) => {
-                    edge.setAttribute("visibility", "visible");
-                });
-                //make all edges not connected to the note invisible
-                const otherEdges = document.querySelectorAll(`[class$=_edge]:not(.${note.id}_edge)`);
-                otherEdges.forEach((edge) => {
-                    edge.setAttribute("visibility", "hidden");
-                });
-            });
-                
-    });
-
-        
     };
 }
-
-// function addInputEdges(edgeType, jsonGraphAnnotation, pageElemnt, zip, color) {
-//     for (const [start, end] of zip(jsonGraphAnnotation.input_edges_dict[edgeType][0], jsonGraphAnnotation.input_edges_dict[edgeType][1])) {
-//         addEdges(edgeType, jsonGraphAnnotation, start, end, pageElemnt, color);
-//     }
-// }
-
-// function addOutputEdges(edgeType, jsonGraphAnnotation, svgElement, pageElemnt, zip, color) {
-//     for (const [start, end] of zip(jsonGraphAnnotation.output_edges_dict[edgeType][0], jsonGraphAnnotation.output_edges_dict[edgeType][1])) {
-//         addEdges(edgeType, jsonGraphAnnotation, start, end, pageElemnt, color);
-        
-//     }
-// }
 
 function addEdges(edgeType,jsonGraphAnnotation, pageElement, zip, color) {
     // if the edge type is not in the json file, return
@@ -283,5 +209,9 @@ function addEdges(edgeType,jsonGraphAnnotation, pageElement, zip, color) {
         // append the id of the starting note as a class
         pathElement.classList.add(`${jsonGraphAnnotation.id[start]}_edge`);
         pageElement.appendChild(pathElement);
+        // make the edges invisible by default
+        pathElement.setAttribute("visibility", "hidden");
+        // set opacity to 0.5
+        pathElement.setAttribute("stroke-opacity", "0.5");
     }
 }
