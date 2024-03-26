@@ -172,9 +172,9 @@ function displayScoreWithGraph(scoreFile, graph_annotation, verovioTk) {
         // add the truth edges
         addEdges("truth", graph_annotation, pageElemnt, zip, "grey");
         // add the potential edges
-        addEdges("potential", graph_annotation, pageElemnt, zip, "orange");
+        addEdges("potential", graph_annotation, pageElemnt, zip, "red");
         // add the predicted edges
-        addEdges("predicted", graph_annotation, pageElemnt, zip, "orange");
+        addEdges("predicted", graph_annotation, pageElemnt, zip, "red");
         // add the chord truth edges
         addEdges("chord_truth", graph_annotation, pageElemnt, zip, "grey");
         // add the chord potential edges
