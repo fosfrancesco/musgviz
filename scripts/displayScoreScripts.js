@@ -143,6 +143,19 @@ toggleOutputGraphCheckbox.addEventListener("change", (event) => {
 }
 );
 
+const toggleOutputTrueGraphCheckbox = document.getElementById("toggle-true-graph");
+toggleOutputTrueGraphCheckbox.addEventListener("change", (event) => {
+    const predictedEdgeElements = document.querySelectorAll(".truth_edge");
+    predictedEdgeElements.forEach((element) => {
+        element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
+    });
+    const chordPredictedEdgeElements = document.querySelectorAll(".chord_truth_edge");
+    chordPredictedEdgeElements.forEach((element) => {
+        element.setAttribute("visibility", event.target.checked ? "visible" : "hidden");
+    });
+}
+);
+
 function displayScoreWithGraph(scoreFile, graph_annotation, verovioTk) {
     const reader = new FileReader();
     reader.readAsText(scoreFile);
@@ -170,13 +183,13 @@ function displayScoreWithGraph(scoreFile, graph_annotation, verovioTk) {
 
         // add the output edges
         // add the truth edges
-        addEdges("truth", graph_annotation, pageElemnt, zip, "grey");
+        addEdges("truth", graph_annotation, pageElemnt, zip, "red");
         // add the potential edges
         addEdges("potential", graph_annotation, pageElemnt, zip, "red");
         // add the predicted edges
         addEdges("predicted", graph_annotation, pageElemnt, zip, "red");
         // add the chord truth edges
-        addEdges("chord_truth", graph_annotation, pageElemnt, zip, "grey");
+        addEdges("chord_truth", graph_annotation, pageElemnt, zip, "blue");
         // add the chord potential edges
         addEdges("chord_potential", graph_annotation, pageElemnt, zip, "blue");
         // add the chord predicted edges
@@ -212,6 +225,6 @@ function addEdges(edgeType,jsonGraphAnnotation, pageElement, zip, color) {
         // make the edges invisible by default
         pathElement.setAttribute("visibility", "hidden");
         // set opacity to 0.5
-        pathElement.setAttribute("stroke-opacity", "0.5");
+        pathElement.setAttribute("stroke-opacity", "0.3");
     }
 }
