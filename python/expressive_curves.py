@@ -92,15 +92,13 @@ def process_score(score_path, json_path, noise_amount=0.1, max_velocity=1.0):
 
     # save the performance midi
     performance = pt.musicanalysis.performance_codec.decode_performance(score, performance_array=performance_array)
-    quarter_divs = 1 / score[0]._quarter_durations[0]
-    ppq = 480
-
     pt.save_performance_midi(performance, os.path.join(os.path.dirname(__file__), os.path.splitext(os.path.basename(score_path))[0] + "-perf.mid"), )
 
 
 
 
 if __name__ == "__main__":
-    score_path = "/home/manos/Desktop/JKU/codes/musgviz/static/Nocturne_in_C_minor_Op.48_No.1_explained.mei"
-    json_path = "/home/manos/Desktop/JKU/codes/musgviz/static/Nocturne_in_C_minor_Op.48_No.1_model_IG.json"
+    static_folder = os.path.dirname(os.path.dirname(__file__))
+    score_path = os.path.join(static_folder, "Nocturne_in_C_minor_Op.48_No.1_explained.mei")
+    json_path = os.path.join(static_folder, "Nocturne_in_C_minor_Op.48_No.1_model_IG.json")
     process_score(score_path, json_path)
