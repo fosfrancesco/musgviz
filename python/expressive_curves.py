@@ -6,7 +6,7 @@ from torch_scatter import scatter_mean
 import torch
 
 
-def process_score(score_path, json_path, noise_amount=0.1, max_velocity=1.0):
+def process_score(score_path, json_path, noise_amount=0.1, max_velocity=0.8, mean_velocity=0.3):
     score = pt.load_score(score_path)
     note_array = score.note_array()
     # initialize the performance array with 0s
@@ -62,7 +62,7 @@ def process_score(score_path, json_path, noise_amount=0.1, max_velocity=1.0):
     # we add noise to the timing values
     performance_array["timing"][timing_mask] = np.random.normal(0, noise_amount*0.1, len(timing_mask))
     # we add noise to the velocity values around the value of 0.5 (velocity is strictly between 0 and 1)
-    performance_array["velocity"] = 0.5 + np.random.normal(0, noise_amount, len(performance_array))
+    performance_array["velocity"] = mean_velocity + np.random.normal(0, noise_amount, len(performance_array))
     # articulation_log should be between -5 and 5
     performance_array["articulation_log"] = np.random.normal(0, noise_amount, len(performance_array)) * 5
     # smooth the articulation values via the graph
@@ -84,8 +84,9 @@ def process_score(score_path, json_path, noise_amount=0.1, max_velocity=1.0):
         r_exp = np.array(d["rest"], dtype=int)
         exp_edges = np.hstack((o_exp, d_exp, c_exp, r_exp))
         exp_edges = torch.from_numpy(exp_edges).long()
+        exp_idxs = torch.unique(torch.cat((exp_edges[0], exp_edges[1])))
         # increase the velocity of the notes that are part of the explanation
-        velocity[n_idxs] += 0.1
+        velocity[exp_idxs] += 0.1
         # smooth the velocity values via the explanation graph
         velocity = scatter_mean(velocity[exp_edges[0]], exp_edges[1], dim=0, out=velocity)
     performance_array["velocity"] = velocity.numpy()
@@ -93,7 +94,6 @@ def process_score(score_path, json_path, noise_amount=0.1, max_velocity=1.0):
     # save the performance midi
     performance = pt.musicanalysis.performance_codec.decode_performance(score, performance_array=performance_array)
     pt.save_performance_midi(performance, os.path.join(os.path.dirname(__file__), os.path.splitext(os.path.basename(score_path))[0] + "-perf.mid"), )
-
 
 
 
