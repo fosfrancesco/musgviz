@@ -7,7 +7,7 @@ import torch
 from scipy.stats import skewnorm
 
 
-def process_score(score_path, json_path, noise_amount=0.1, max_velocity=0.8, mean_velocity=0.3, graph_smooth=True, save_midi=True, add_noise=True, skewness_of_tempo=0.0):
+def process_score(score_path, json_path, noise_amount=0.1, max_velocity=0.8, mean_velocity=0.3, graph_smooth=True, save_midi=True, add_noise=True, skewness_of_tempo=0.0, prime_higher_voice=0.0):
     """
     Create a performance from a score and a json file with the explanation graph
 
@@ -123,6 +123,14 @@ def process_score(score_path, json_path, noise_amount=0.1, max_velocity=0.8, mea
         if graph_smooth:
             velocity = scatter_mean(velocity[exp_edges[0]], exp_edges[1], dim=0, out=velocity)
     performance_array["velocity"] = velocity.numpy()
+
+    # Prime the higher voice
+    if prime_higher_voice > 0:
+        unique_voices = np.unique(note_array["voice"])
+        voice_mean_pitch = [note_array[note_array["voice"] == v]["pitch"].mean() for v in unique_voices]
+        higher_voice = np.argmax(voice_mean_pitch)
+        higher_voice_idxs = np.where(note_array["voice"] == higher_voice)[0]
+        performance_array["velocity"][higher_voice_idxs] += 0.1
 
     # limit velocity to the maximum value
     performance_array["velocity"] = np.clip(performance_array["velocity"], 0, max_velocity)
