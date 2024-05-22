@@ -68,7 +68,7 @@ def process_score(score_path, json_path, noise_amount=0.1, max_velocity=0.8, mea
     mu = 0
     sig = 1
     tempo_curve = np.linspace(-1, 1, num=10000)
-    tempo_curve = skewnorm.pdf(tempo_curve, a=skewness_of_tempo, loc=mu, scale=sig)
+    tempo_curve = skewnorm.pdf(tempo_curve, a=skewness_of_tempo, loc=mu, scale=sig) + 0.5
     # for ranges between cadences we apply the distribution model and scale the x axis
     start_t = 0
     for i in range(len(cadence_points)):
@@ -145,7 +145,7 @@ def process_score(score_path, json_path, noise_amount=0.1, max_velocity=0.8, mea
 
 
 if __name__ == "__main__":
-    static_folder = os.path.dirname(os.path.dirname(__file__))
+    static_folder = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
     score_path = os.path.join(static_folder, "Nocturne_in_C_minor_Op.48_No.1_explained.mei")
     json_path = os.path.join(static_folder, "Nocturne_in_C_minor_Op.48_No.1_model_IG.json")
     process_score(score_path, json_path)
