@@ -2,12 +2,12 @@ import numpy as np
 import os
 import json
 import partitura as pt
-from torch_scatter import scatter_mean
+import partitura.score
+import partitura.score as spt
 import torch
-from scipy.stats import skewnorm
 
 
-def process_score(score_path, json_path, noise_amount=0.1, max_velocity=0.8, mean_velocity=0.3, graph_smooth=True, save_midi=True, add_noise=True, skewness_of_tempo=0.0, prime_higher_voice=0.0):
+def process_score(score_path, json_path, max_velocity=0.8):
     """
     Create a performance from a score and a json file with the explanation graph
 
@@ -38,8 +38,7 @@ def process_score(score_path, json_path, noise_amount=0.1, max_velocity=0.8, mea
 
     """
     score = pt.load_score(score_path)
-    note_array = score.note_array()
-    add_noise = float(add_noise)
+    note_array = score.note_array(include_staff=True, include_pitch_spelling=True)
     # initialize the performance array with 0s
     performance_array = np.zeros(note_array.shape[0], dtype=[("beat_period", "f4"), ("velocity", "f4"), ("articulation_log", "f4"), ("timing", "f4")])
     with open(json_path) as json_path:
@@ -60,30 +59,8 @@ def process_score(score_path, json_path, noise_amount=0.1, max_velocity=0.8, mea
     cadence_points = np.unique(cadence_points)
     n_idxs = np.array(n_idxs)
     performance_array["velocity"][n_idxs] = max_velocity
-
     # sort the cadences by the start time
     cadence_points = cadence_points[np.argsort(cadence_points)]
-    # sort_idx = np.argsort(list(map(lambda x: x.start.t, cadences)))
-    # cadence_points = np.array(list(map(lambda x: x.start.t, cadences)))
-    # add 0 on the beginning of the array
-    # A tempo curve for a phrase is a "gaussian" distribution
-    mu = 0
-    sig = 1
-    tempo_curve = np.linspace(-1, 1, num=10000)
-    tempo_curve = skewnorm.pdf(tempo_curve, a=skewness_of_tempo, loc=mu, scale=sig) + 0.5
-    # for ranges between cadences we apply the distribution model and scale the x axis
-    start_t = 0
-    for i in range(len(cadence_points)):
-        end_t = cadence_points[i]
-        note_mask = (note_array["onset_div"] >= start_t) & (note_array["onset_div"] <= end_t)
-        onset_div = note_array["onset_div"][note_mask] - start_t
-        range_t = end_t - start_t
-        # tc = tempo_curve * range_t
-        idx_onset = onset_div * (tempo_curve.shape[0]/ range_t) - 1
-        idx_onset = np.round(idx_onset).astype(int)
-        # we select the points corresponding to the notes and add noise
-        performance_array["beat_period"][note_mask] = tempo_curve[idx_onset] + add_noise*np.random.normal(0, noise_amount, len(onset_div))
-        start_t = end_t
 
     onset_edges = np.array(jfile.pop("onset"), dtype=int)
     during_edges = np.array(jfile.pop("during"), dtype=int)
@@ -91,28 +68,8 @@ def process_score(score_path, json_path, noise_amount=0.1, max_velocity=0.8, mea
     rest_edges = np.array(jfile.pop("rest"), dtype=int)
     all_edges = np.hstack((onset_edges, during_edges, consecutive_edges, rest_edges))
     all_edges = torch.from_numpy(all_edges).long()
-    timing_mask = np.unique(onset_edges[0])
-    # we add noise to the timing values
-    performance_array["timing"][timing_mask] = add_noise*np.random.normal(0, noise_amount*0.1, len(timing_mask))
-    # we add noise to the velocity values around the value of 0.5 (velocity is strictly between 0 and 1)
-    # performance_array["velocity"] = mean_velocity + add_noise*np.random.normal(0, noise_amount, len(performance_array))
-    # articulation_log should be between -5 and 5
-    performance_array["articulation_log"] = add_noise*np.random.normal(0, noise_amount, len(performance_array)) * 5
-    if graph_smooth:
-        # smooth the articulation values via the graph
-        articulation = torch.from_numpy(performance_array["articulation_log"])
-        articulation = scatter_mean(torch.from_numpy(performance_array["articulation_log"])[all_edges[0]], all_edges[1], dim=0, out=articulation)
-        performance_array["articulation_log"] = articulation.numpy()
-        # smooth the tempo values via the graph
-        beat_period = torch.from_numpy(performance_array["beat_period"])
-        beat_period = scatter_mean(torch.from_numpy(performance_array["beat_period"])[all_edges[0]], all_edges[1], dim=0, out=beat_period)
-        performance_array["beat_period"] = beat_period.numpy()
-    # prime the velocity values of the explanation graph
-    #
-    performance_array["velocity"][n_idxs] = max_velocity
+
     velocity = torch.from_numpy(performance_array["velocity"])
-
-
     for k in id_keys:
         d = jfile[k]
         o_exp = np.array(d["onset"], dtype=int)
@@ -124,28 +81,89 @@ def process_score(score_path, json_path, noise_amount=0.1, max_velocity=0.8, mea
         exp_idxs = torch.unique(torch.cat((exp_edges[0], exp_edges[1])))
         # increase the velocity of the notes that are part of the explanation
         velocity[exp_idxs] = max_velocity
-        # smooth the velocity values via the explanation graph
-        if graph_smooth:
-            velocity = scatter_mean(velocity[exp_edges[0]], exp_edges[1], dim=0, out=velocity)
     performance_array["velocity"] = velocity.numpy()
-
-    # Prime the higher voice
-    if prime_higher_voice > 0:
-        unique_voices = np.unique(note_array["voice"])
-        voice_mean_pitch = [note_array[note_array["voice"] == v]["pitch"].mean() for v in unique_voices]
-        higher_voice = np.argmax(voice_mean_pitch)
-        higher_voice_idxs = np.where(note_array["voice"] == higher_voice)[0]
-        performance_array["velocity"][higher_voice_idxs] += 0.1
 
     # limit velocity to the maximum value
     performance_array["velocity"] = np.clip(performance_array["velocity"], 0, max_velocity)
 
-    # save the performance midi
-    performance = pt.musicanalysis.performance_codec.decode_performance(score, performance_array=performance_array)
+    # Create new part for the reduction
+    quarter_duration = score[0]._quarter_durations[0]
+    new_part = spt.Part(id="Reduction", part_name="Explanation Reduction", part_abbreviation="ER", quarter_duration=quarter_duration)
+    # initialize clef, key and time signature
+    for p in score.parts:
+        for el in p.iter_all(start=0, end=1):
+            if isinstance(el, spt.Clef):
+                new_part.add(el, 0)
+            elif isinstance(el, spt.KeySignature):
+                new_part.add(el, 0)
+            elif isinstance(el, spt.TimeSignature):
+                new_part.add(el, 0)
+            else:
+                pass
 
-    if save_midi:
-        pt.save_performance_midi(performance, os.path.join(os.path.dirname(__file__), os.path.splitext(os.path.basename(score_path))[0] + "-cad.mid"), )
-    return performance
+    new_notes = np.unique(np.hstack((n_idxs, exp_idxs.numpy())))
+    new_note_array = note_array[new_notes]
+    # fix onset beats to start from zero and not to be spaced more than 2 beats apart.
+    new_note_array["onset_beat"] = new_note_array["onset_beat"] - new_note_array["onset_beat"].min()
+    onset_beats = new_note_array["onset_beat"]
+    offset_beats = new_note_array["onset_beat"] + new_note_array["duration_beat"]
+    par = []
+    child = []
+    categorized = np.zeros(new_note_array.shape[0], dtype=bool)
+    for i, note in enumerate(new_note_array):
+        if categorized[i]:
+            continue
+        n_onset = note["onset_beat"]
+        n_offset = note["onset_beat"] + note["duration_beat"]
+        pot_idx = np.where(np.logical_and(onset_beats < n_offset, onset_beats >= n_onset))
+        if pot_idx[0].shape[0] == 1:
+            par.append(i)
+            child.append([])
+        elif len(pot_idx[0]) == len(np.where(onset_beats == n_onset)[0]):
+            continue
+        else:
+            c = []
+            par.append(i)
+            for idx in pot_idx[0]:
+                if idx != i:
+                    c.append(idx)
+                    categorized[i] = True
+                    categorized[idx] = True
+            child.append(c)
+    # Now you found pedal notes and their children let's restructure them so that they left alighned
+    # Set minimum duration of 1 beat
+    new_note_array[new_note_array["duration_beat"] < 1] = 1
+    for i, p in enumerate(par):
+        if len(child[i]) == 0:
+            continue
+        p_note = new_note_array[p]
+        p_offset = p_note["onset_beat"] + p_note["duration_beat"]
+        # find unique onset values for the children
+        children_onset = new_note_array[child[i]]["onset_beat"]
+        un_ch_onset = np.unique(children_onset)
+        new_onset = p_note["onset_beat"]
+        for on_v in un_ch_onset:
+            ch_idx = np.array(child[i])[children_onset == on_v]
+            new_note_array[ch_idx]["onset_beat"] = new_onset
+            dur = np.maximum(new_note_array[ch_idx]["duration_beat"], 1).max()
+            new_note_array[ch_idx]["duration_beat"] = dur
+            new_onset = new_onset + dur
+
+    start = score[0].beat_map(new_note_array["onset_beat"])
+    end = score[0].beat_map(new_note_array["onset_beat"] + new_note_array["duration_beat"])
+    for i, note in enumerate(new_note_array):
+        el = spt.Note(
+            step=note["step"],
+            octave=note["octave"],
+            alter=note["alter"],
+            id=note["id"],
+            staff=note["staff"],
+            symbolic_duration=pt.utils.music.estimate_symbolic_duration(note["duration_beat"], quarter_duration),
+        )
+        new_part.add(el, start[i], end[i])
+
+    spt.add_measures(new_part)
+    pt.save_musicxml(new_part, os.path.join(os.path.dirname(__file__), "reduction.musicxml"))
 
 
 
@@ -153,4 +171,4 @@ if __name__ == "__main__":
     static_folder = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
     score_path = os.path.join(static_folder, "K280-2_explained.mei")
     json_path = os.path.join(static_folder, "K280-2_model_IG.json")
-    process_score(score_path, json_path, graph_smooth=False, noise_amount=0.0, add_noise=False)
+    process_score(score_path, json_path)
