@@ -132,7 +132,7 @@ def process_score(score_path, json_path, max_velocity=0.8):
             child.append(c)
     # Now you found pedal notes and their children let's restructure them so that they left alighned
     # Set minimum duration of 1 beat
-    new_note_array[new_note_array["duration_beat"] < 1] = 1
+    new_note_array[new_note_array["duration_beat"] < 1]["duration_beat"] = 1
     for i, p in enumerate(par):
         if len(child[i]) == 0:
             continue
@@ -149,8 +149,19 @@ def process_score(score_path, json_path, max_velocity=0.8):
             new_note_array[ch_idx]["duration_beat"] = dur
             new_onset = new_onset + dur
 
-    start = score[0].beat_map(new_note_array["onset_beat"])
-    end = score[0].beat_map(new_note_array["onset_beat"] + new_note_array["duration_beat"])
+    offset_times = new_note_array["onset_beat"] + new_note_array["duration_beat"]
+    onset_times = new_note_array["onset_beat"]
+    unique_onset_times = np.unique(onset_times)
+    diff_times = onset_times[1:] - offset_times[:-1] > 4
+    for i, diff in enumerate(diff_times):
+        if diff:
+            onset_times[i+1:] = onset_times[i+1:] - onset_times[i+1] + offset_times[i]
+            new_note_array["onset_beat"] = onset_times
+            offset_times = new_note_array["onset_beat"] + new_note_array["duration_beat"]
+            onset_times = new_note_array["onset_beat"]
+
+    start = score[0].inv_beat_map(new_note_array["onset_beat"]).astype(int)
+    end = score[0].inv_beat_map(new_note_array["onset_beat"] + new_note_array["duration_beat"]).astype(int)
     for i, note in enumerate(new_note_array):
         el = spt.Note(
             step=note["step"],
@@ -158,11 +169,14 @@ def process_score(score_path, json_path, max_velocity=0.8):
             alter=note["alter"],
             id=note["id"],
             staff=note["staff"],
-            symbolic_duration=pt.utils.music.estimate_symbolic_duration(note["duration_beat"], quarter_duration),
+            voice=note["voice"],
+            symbolic_duration=pt.utils.music.estimate_symbolic_duration(note["duration_beat"]*quarter_duration, quarter_duration),
         )
-        new_part.add(el, start[i], end[i])
+        new_part.add(el, start=start[i], end=end[i])
 
+    pt.save_score_midi(new_part, os.path.join(os.path.dirname(__file__), "reduction.mid"), part_voice_assign_mode=2)
     spt.add_measures(new_part)
+    pt.score.tie_notes(new_part)
     pt.save_musicxml(new_part, os.path.join(os.path.dirname(__file__), "reduction.musicxml"))
 
 
