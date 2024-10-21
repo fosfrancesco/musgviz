@@ -75,11 +75,15 @@ verovio.module.onRuntimeInitialized = async _ => {
             if (!("voice_truth" in jsonData)) {
                 // disable the value truth in the selected graph-type
                 document.getElementById('graph-type').options[4].disabled = true;
+                // change the color to light gray
+                document.getElementById('graph-type').options[4].style.color = "lightgray";
             }
             // check if the jsonData has a voice_output key
             if (!("voice_output" in jsonData)) {
                 // disable the value output in the selected graph-type
                 document.getElementById('graph-type').options[3].disabled = true;
+                // change the color to light gray
+                document.getElementById('graph-type').options[3].style.color = "lightgray";
             }
         });
         reader.readAsText(file);
@@ -269,8 +273,6 @@ verovio.module.onRuntimeInitialized = async _ => {
 
     
 }
-
-
 
 
 function displayScoreWithGraph(scoreFile, graph_annotation, verovioTk) {
