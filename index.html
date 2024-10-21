@@ -4,59 +4,113 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Score Graph Visualization</title>
-    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/styles.css">	
   </head>
   <body>
-    <header>
-      <h1>Score Graph Visualization</h1>
-    </header>
-    <main>
-      <section>
-        <h2>Upload Files</h2>
-        <div class="file-upload">
-          <label for="json-file-input">Upload JSON graph annotation:</label>
-          <input type="file" id="json-file-input" />
+    <div class='container-fluid'>
+      <div class='controls p-3' style="height: 20vh;">
+        <div class="row">
+          <div class="col-md-3">
+              <div class="form-group">
+                <label for="json-file-input" class="mr-2">Annotation JSON:</label>
+                <input type="file" id="json-file-input" class="form-control-file" />
+              </div>
+              <div class="form-group">
+                <label for="mei-file-input" class="mr-2">MEI score:</label>
+                <input type="file" id="mei-file-input" class="form-control-file" disabled />
+              </div>
+          </div>
+          <div class="col-md-2">
+            <div class="form-group">
+              <label for="graph-type">Graph Type:</label>
+              <select id="graph-type" class="form-control" disabled>
+                  <option selected>Select the graph type</option>
+                  <option value="input">Input Graph</option>
+                  <option value="candidates">Edge Candidates</option>
+                  <option value="output">Output Graph (if present)</option>
+                  <option value="truth">Truth Graph (if present)</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <!-- Input Graph -->
+            <div class="form-group" id="input-edge-options" style="display: none;">
+                <label for="input-type">Edge Type:</label>
+                <div class="custom-control custom-switch">
+                  <input type="checkbox" class="custom-control-input" id="consecutiveSwitch">
+                  <label class="custom-control-label" for="consecutiveSwitch">Consecutive</label>
+              </div>
+              <div class="custom-control custom-switch">
+                  <input type="checkbox" class="custom-control-input" id="onsetSwitch">
+                  <label class="custom-control-label" for="onsetSwitch">Onset</label>
+              </div>
+              <div class="custom-control custom-switch">
+                  <input type="checkbox" class="custom-control-input" id="duringSwitch">
+                  <label class="custom-control-label" for="duringSwitch">During</label>
+              </div>
+              <div class="custom-control custom-switch">
+                  <input type="checkbox" class="custom-control-input" id="restSwitch">
+                  <label class="custom-control-label" for="restSwitch">Rest</label>
+              </div>
+            </div>
+            <!-- Candidate Graph -->
+            <div class="form-group" id="candidate-edge-options" style="display: none;">
+              <label for="input-type">Edge Type:</label>
+              <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="voiceCandidateSwitch">
+                <label class="custom-control-label" for="voiceCandidateSwitch">Voice</label>
+              </div>
+              <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="chordCandidateSwitch">
+                <label class="custom-control-label" for="chordCandidateSwitch">Chord</label>
+              </div>
+            </div>
+            <!-- Output Graph -->
+            <div class="form-group" id="output-edge-options" style="display: none;">
+              <label for="input-type">Edge Type:</label>
+              <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="voiceOutputSwitch">
+                <label class="custom-control-label" for="voiceOutputSwitch">Voice</label>
+              </div>
+              <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="chordOutputSwitch">
+                <label class="custom-control-label" for="chordOutputSwitch">Chord</label>
+              </div>
+            </div>
+            <!-- Truth Graph -->
+            <div class="form-group" id="truth-edge-options" style="display: none;">
+              <label for="input-type">Edge Type:</label>
+              <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="voiceTruthSwitch">
+                <label class="custom-control-label" for="voiceTruthSwitch">Voice</label>
+              </div>
+              <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="chordTruthSwitch">
+                <label class="custom-control-label" for="chordTruthSwitch">Chord</label>
+              </div>
+          </div>
+          </div>
+          <div class="col-md-2">
+            <div class="audio_commands">
+              <button id="playMIDI" class="btn btn-primary mr-2">Play</button>
+              <button id="stopMIDI" class="btn btn-primary">Stop</button>
+            </div>
+          </div>
         </div>
-        <div class="file-upload">
-          <label for="mei-file-input">Upload MEI score file:</label>
-          <input type="file" id="mei-file-input" />
-        </div>
-      </section>
-      <section>
-        <h2>Audio Controls</h2>
-        <button id="playMIDI">Play</button>
-        <button id="stopMIDI">Stop</button>
-      </section>
-      <section>
-        <h2>Options</h2>
-        <div id="checkbox-container">
-          <div>
-            <input type="checkbox" id="toggle-input-graph" />
-            <label for="toggle-input_graph">Input Graph</label>
-          </div>
-          <div>
-            <input type="checkbox" id="toggle-potential-graph" />
-            <label for="toggle-output-graph">Candidate Graph</label>
-          </div>
-          <div>
-            <input type="checkbox" id="toggle-output-graph" />
-            <label for="toggle-output-graph">Output Graph</label>
-          </div>
-          <div>
-            <input type="checkbox" id="toggle-true-graph" />
-            <label for="toggle-output-graph">True Output Graph <br> (if available)</label>
-          </div>
-        </div>
-      </section>
-      <section>
-        <h2>Output</h2>
-        <div id="instructions">Upload JSON graph annotation first.</div>
-        <div id="output"></div>
-      </section>
-    </main>
+        <div id="instructions" class="alert alert-info">Upload JSON graph annotation first.</div>
+      </div>
+      <div class='output' style="height: 50vh;">
+        <div id="output" style="height: 100%; overflow-x: scroll; overflow-y: hidden;"></div>
+      </div>
+      <div class='feature_importance' style="height: 40vh;">
+        <div id="feature_importance" style="height: 100%;"></div>
+      </div>
+    </div>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="http://www.verovio.org/javascript/latest/verovio-toolkit-wasm.js" defer></script>
     <script src="scripts/displayScoreScripts.js" defer></script>
     <script src='https://www.midijs.net/lib/midi.js'></script> <!-- A JavaScript MIDI player -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   </body>
 </html>
