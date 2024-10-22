@@ -1,4 +1,4 @@
-* {
+/* * {
     box-sizing: border-box;
   }
   
@@ -34,8 +34,8 @@
   section h2 {
     margin-top: 0;
   }
-  
-  .file-upload {
+   */
+  /* .file-upload {
     display: flex;
     align-items: center;
     margin-bottom: 1rem;
@@ -43,22 +43,22 @@
   
   .file-upload label {
     margin-right: 1rem;
-  }
+  } */
   
-  #checkbox-container {
+  /* #checkbox-container {
     display: flex;
     justify-content: space-between;
     margin-bottom: 1rem;
   }
-  
-  #checkbox-container > div {
+   */
+  /* #checkbox-container > div {
     display: flex;
     align-items: center;
-  }
+  } */
   
-  #checkbox-container input[type="checkbox"] {
+  /* #checkbox-container input[type="checkbox"] {
     margin-right: 0.5rem;
-  }
+  } */
   
   #output {
     position: absolute;
@@ -72,3 +72,17 @@
 g.note.playing {
   fill: crimson;
 }  
+
+
+#instructions {
+  border-top-width: 0px;
+  border-bottom-width: 0px;
+}
+
+g.note.annotated {
+  fill: rgb(110, 167, 6);
+}
+
+g.note.clicked {
+  fill: rgb(238, 20, 20);
+}
